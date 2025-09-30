@@ -1,0 +1,14 @@
+.boton-nuevo-periodo {
+  margin-bottom: 18px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.boton-nuevo-periodo:hover {
+  background: #0056b3;
+}
