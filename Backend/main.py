@@ -1,9 +1,8 @@
-
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from features.Proyecto.Bloque.bloqueProyectoRouter import router as bloques_router
 
+from features.Proyecto.Bloque.bloqueProyectoRouter import router as bloques_router
+from features.Periodo.BloquePeriodo.bloquesPeriodoRouter import router as periodos_router
 
 app = FastAPI()
 
@@ -17,8 +16,7 @@ app.add_middleware(
 
 # Registrar el router de bloques
 app.include_router(bloques_router)
-
-
+app.include_router(periodos_router)
 
 @app.get("/")
 def read_root():
