@@ -6,7 +6,6 @@ import Slidebar from '../../components/Slidebar/Slidebar';
 function periodos() {
   return (
     <>
-      <BarraInferior />
       <Slidebar />
     </>
   );
