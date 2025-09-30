@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .bloquesPeriodoService import get_periodos, get_periodo, create_periodo, update_periodo, delete_periodo
@@ -34,3 +35,16 @@ def delete_existing_periodo(periodo_id: int, db: Session = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=404, detail="Periodo no encontrado")
     return deleted
+=======
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from db.db import get_db
+from .bloquesPeriodoService import get_bloques
+from .bloquesPeriodoSchema import BloqueOut
+
+router = APIRouter(prefix="/bloques", tags=["bloques"])
+
+@router.get("/", response_model=list[BloqueOut])
+def read_bloques(db: Session = Depends(get_db)):
+    return get_bloques(db)
+>>>>>>> d3d78c15176965c29d19b45ce8b5a63588cd5615

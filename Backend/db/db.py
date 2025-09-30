@@ -83,25 +83,13 @@ def crear_base_de_datos(db_file):
             conn.close()
             print("Conexión a la base de datos cerrada.")
 
-
-# --- Configuración para SQLAlchemy y FastAPI ---
-appdata_dir = os.environ.get("APPDATA")
-nombre_app = "SISDOA"
-db_folder = os.path.join(appdata_dir, nombre_app)
-os.makedirs(db_folder, exist_ok=True)
-nombre_db = os.path.join(db_folder, "documentos.db")
-
-# Crear la base de datos si no existe
-if not os.path.exists(nombre_db):
+# --- Uso del script ---
+if __name__ == '__main__':
+    # Obtener la ruta de AppData
+    appdata_dir = os.environ.get("APPDATA")
+    nombre_app = "SISDOA"  # Cambia esto si tu app tiene otro nombre
+    db_folder = os.path.join(appdata_dir, nombre_app)
+    os.makedirs(db_folder, exist_ok=True)
+    nombre_db = os.path.join(db_folder, "documentos.db")
+    # Llama a la función para crearla
     crear_base_de_datos(nombre_db)
-
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{nombre_db}"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()

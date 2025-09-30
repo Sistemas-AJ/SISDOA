@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from sqlalchemy.orm import Session
 from .bloquesPeriodoModel import Bloque
 from .bloquesPeriodoSchema import BloqueCreate, BloqueUpdate
@@ -34,3 +35,12 @@ def delete_periodo(db: Session, periodo_id: int):
         db.delete(db_periodo)
         db.commit()
     return db_periodo
+=======
+
+from sqlalchemy.orm import Session
+from .bloquesPeriodoModel import Bloque
+
+def get_bloques(db: Session):
+	return db.query(Bloque).all()
+
+>>>>>>> d3d78c15176965c29d19b45ce8b5a63588cd5615
