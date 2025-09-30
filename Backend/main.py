@@ -1,6 +1,9 @@
 
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from features.Proyecto.Bloque.bloqueProyectoRouter import router as bloques_router
+
 
 app = FastAPI()
 
@@ -11,6 +14,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Registrar el router de bloques
+app.include_router(bloques_router)
 
 
 
