@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Slidebar from "../../components/Slidebar/Slidebar";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -16,7 +15,7 @@ const PeriodosSlidebar = () => {
   const fetchPeriodos = () => {
     fetch(`${BACKEND_URL}/periodos/`)
       .then((res) => res.json())
-      .then((data) => setPeriodos(data))
+      .then((data) => setPeriodos(Array.isArray(data) ? data : []))
       .catch(() => setPeriodos([]));
   };
 
