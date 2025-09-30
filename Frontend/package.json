@@ -14,7 +14,11 @@
     "electron-is-dev": "^3.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+<<<<<<< HEAD
     "react-icons": "^5.5.0",
+=======
+    "react-router-dom": "^7.9.3",
+>>>>>>> 0fec7c3f11486e82ef8990a86f6aede616b1a097
     "react-scripts": "5.0.1",
     "wait-on": "^9.0.1",
     "web-vitals": "^2.1.4"

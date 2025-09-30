@@ -1,16 +1,20 @@
 import './App.css';
-import Slidebar from './components/Slidebar/Slidebar';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import BarraInferior from './components/BarraInferior/BarraInferior';
 
 function App() {
   return (
-    <div className="App" style={{ display: "flex" }}>
+    <Router>
+      <BarraInferior />
       <Slidebar />
-      <div style={{ flex: 1 }}>
+      {/* Aquí puedes agregar tus rutas principales */}
+      <div className="App">
         <header className="App-header">
-          <h1>Adrian Estubo aca</h1>
+          <code>hola mundo</code>
         </header>
       </div>
-    </div>
+    </Router>
   );
 }
 
