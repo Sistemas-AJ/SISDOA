@@ -8,7 +8,5 @@ Base = declarative_base()
 class Bloque(Base):
     __tablename__ = "Bloques"
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, nullable=False)
-    tipo = Column(String, nullable=False, default="periodo")  # Debe ser 'periodo' para los periodos
+    tipo = Column(String, nullable=False)
     descripcion = Column(String, nullable=True)
-    fecha_creacion = Column(DateTime, default=datetime.utcnow)
