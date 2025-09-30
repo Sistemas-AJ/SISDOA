@@ -91,6 +91,11 @@ db_folder = os.path.join(appdata_dir, nombre_app)
 os.makedirs(db_folder, exist_ok=True)
 nombre_db = os.path.join(db_folder, "documentos.db")
 
+
+
+# Importar modelos para que SQLAlchemy cree las tablas
+from features.Periodo.BloquePeriodo.bloquesPeriodoModel import Base as BloqueBase
+
 # Crear la base de datos si no existe
 if not os.path.exists(nombre_db):
     crear_base_de_datos(nombre_db)
@@ -98,6 +103,9 @@ if not os.path.exists(nombre_db):
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{nombre_db}"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Crear tablas si no existen
+BloqueBase.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()

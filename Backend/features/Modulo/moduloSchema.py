@@ -2,15 +2,19 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-
-
-class BloqueBase(BaseModel):
+class ModuloBase(BaseModel):
     nombre: str
     tipo: str
-    descripcion: Optional[str] = None
 
-class BloqueOut(BloqueBase):
+class ModuloCreate(ModuloBase):
+    pass
+
+class ModuloUpdate(ModuloBase):
+    pass
+
+class ModuloOut(ModuloBase):
     id: int
+    fecha_creacion: datetime
 
     class Config:
         orm_mode = True
