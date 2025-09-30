@@ -1,9 +1,6 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.carpeta_router import router as carpeta_router
-from routers.bloque_router import router as bloque_router
-from service.bloque_service import inicializar_bloques_unicos
 
 app = FastAPI()
 
