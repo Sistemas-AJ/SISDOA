@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./PeriodoDetalle.css";
 import CrearCarpetaModal from "../proyectos/CrearCarpetaModal";
 import BACKEND_URL from "../../service/backend";
 import { useNotification } from "../../contexts/NotificationContext";
@@ -7,6 +8,14 @@ import EditarCarpetaModal from "../../components/EditarCarpetaModal/EditarCarpet
 import ConfirmarEliminarCarpetaModal from "../../components/ConfirmarEliminarCarpetaModal/ConfirmarEliminarCarpetaModal";
 import SubirArchivoModal from "../../components/SubirArchivoModal/SubirArchivoModal";
 import ListaArchivos from "../../components/ListaArchivos/ListaArchivos";
+import AcordeonVista from "../../components/AcordeonVista/AcordeonVista";
+import VistaIconosGrandes from "../../components/VistaIconosGrandes/VistaIconosGrandes";
+import VistaIconosMedianos from "../../components/VistaIconosMedianos/VistaIconosMedianos";
+import VistaIconosPequenos from "../../components/VistaIconosPequenos/VistaIconosPequenos";
+import VistaDetalles from "../../components/VistaDetalles/VistaDetalles";
+import VistaMosaicos from "../../components/VistaMosaicos/VistaMosaicos";
+import VistaContenido from "../../components/VistaContenido/VistaContenido";
+import VistaListaCarpetas from "../../components/VistaListaCarpetas/VistaListaCarpetas";
 
 const PeriodoDetalle = ({ periodo }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,6 +42,9 @@ const PeriodoDetalle = ({ periodo }) => {
   // Estados para archivos
   const [subirArchivoModal, setSubirArchivoModal] = useState(false);
   const [carpetaParaArchivo, setCarpetaParaArchivo] = useState(null);
+  
+  // Estado para el modo de vista
+  const [modoVista, setModoVista] = useState('iconos-grandes'); // Diferentes modos de vista
 
   const fetchCarpetas = async () => {
     if (!periodo) return;
@@ -228,45 +240,24 @@ const PeriodoDetalle = ({ periodo }) => {
   // Función para renderizar el breadcrumb (ruta de navegación)
   const renderBreadcrumb = () => {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '8px', 
-        marginBottom: '16px',
-        padding: '8px 12px',
-        background: '#f8f9fa',
-        borderRadius: '6px',
-        fontSize: '14px'
-      }}>
+      <div className="periodo-detalle__breadcrumb">
         <span 
           onClick={() => irACarpeta(null, -1)}
-          style={{ 
-            cursor: 'pointer', 
-            color: '#2196f3',
-            textDecoration: 'none'
-          }}
-          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+          className="periodo-detalle__breadcrumb-item"
         >
           🏠 Raíz
         </span>
         
         {rutaCarpetas.map((carpeta, index) => (
           <React.Fragment key={carpeta.id}>
-            <span style={{ color: '#666' }}>/</span>
+            <span className="periodo-detalle__breadcrumb-separator">/</span>
             <span 
               onClick={() => irACarpeta(carpeta, index)}
-              style={{ 
-                cursor: 'pointer', 
-                color: index === rutaCarpetas.length - 1 ? '#333' : '#2196f3',
-                fontWeight: index === rutaCarpetas.length - 1 ? 'bold' : 'normal'
-              }}
-              onMouseEnter={(e) => {
-                if (index !== rutaCarpetas.length - 1) {
-                  e.target.style.textDecoration = 'underline';
-                }
-              }}
-              onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+              className={`periodo-detalle__breadcrumb-item ${
+                index === rutaCarpetas.length - 1 
+                  ? 'periodo-detalle__breadcrumb-item--current' 
+                  : ''
+              }`}
             >
               {carpeta.nombre}
             </span>
@@ -276,122 +267,60 @@ const PeriodoDetalle = ({ periodo }) => {
     );
   };
 
-  // Función para renderizar una carpeta
-  const renderCarpeta = (carpeta) => {
-    return (
-      <div 
-        key={carpeta.id}
-        style={{
-          padding: '16px',
-          background: 'white',
-          borderRadius: '6px',
-          border: '1px solid #ddd',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '12px'
-        }}
-        onClick={() => entrarEnCarpeta(carpeta)}
-        onContextMenu={(e) => handleContextMenuCarpeta(e, carpeta)}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#2196f3';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.2)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#ddd';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            background: '#2196f3', 
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '14px'
-          }}>
-            📁
-          </div>
-          <div>
-            <div style={{ fontWeight: '500', color: '#333', fontSize: '14px' }}>
-              {carpeta.nombre}
-            </div>
-            <div style={{ fontSize: '12px', color: '#666' }}>
-              Creada: {new Date(carpeta.fecha_creacion).toLocaleDateString('es-ES')}
-            </div>
-          </div>
-        </div>
-        
-        <div style={{ fontSize: '12px', color: '#888' }}>
-          Click derecho para opciones →
-        </div>
-      </div>
-    );
-  };
+
 
   if (!periodo) {
-    return <div style={{ textAlign: 'center', padding: '40px', color: '#666', fontStyle: 'italic' }}>
-      Selecciona un período para ver detalles
-    </div>;
+    return (
+      <div className="periodo-detalle__empty-message">
+        Selecciona un período para ver detalles
+      </div>
+    );
   }
 
   // Buscar metadatos del período
   const responsable = periodo.metadatos?.find(m => m.clave === "responsable_proyecto")?.valor || "Sin responsable";
   const estado = periodo.metadatos?.find(m => m.clave === "estado_proyecto")?.valor || "Sin estado";
 
+  // Función para obtener clase CSS del estado
+  const getEstadoClass = (estado) => {
+    switch (estado) {
+      case 'Activo':
+        return 'periodo-detalle__status--activo';
+      case 'Completado':
+        return 'periodo-detalle__status--completado';
+      case 'En Pausa':
+        return 'periodo-detalle__status--pausa';
+      default:
+        return 'periodo-detalle__status--default';
+    }
+  };
+
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, marginTop: 32 }}>
-        <div style={{ marginLeft: 24 }}>
-          <h2 style={{ margin: 0, color: '#333' }}>{periodo.nombre}</h2>
-          <p style={{ margin: '8px 0 0 0', color: '#555' }}>
-            <b>Responsable:</b> {responsable}
-          </p>
-          <p style={{ margin: '4px 0 0 0' }}>
-            <b>Estado:</b> 
-            <span style={{
-              marginLeft: '8px',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              backgroundColor: estado === 'Activo' ? '#e8f5e8' : 
-                             estado === 'Completado' ? '#e3f2fd' : 
-                             estado === 'En Pausa' ? '#fff3e0' : '#f5f5f5',
-              color: estado === 'Activo' ? '#2e7d32' : 
-                     estado === 'Completado' ? '#1565c0' : 
-                     estado === 'En Pausa' ? '#ef6c00' : '#757575'
-            }}>
-              {estado}
+    <div className="periodo-detalle">
+      {/* Cabecera compacta */}
+      <div className="periodo-detalle__header">
+        <div>
+          <h2 className="periodo-detalle__title">{periodo.nombre}</h2>
+          <div className="periodo-detalle__meta">
+            <span className="periodo-detalle__meta-item">
+              <b>Responsable:</b> {responsable}
             </span>
-          </p>
+            <span className="periodo-detalle__meta-item">
+              <b>Estado:</b>
+              <span className={`periodo-detalle__status ${getEstadoClass(estado)}`}>
+                {estado}
+              </span>
+            </span>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="periodo-detalle__controls">
           {!carpetaActual && (
             <button 
               onClick={() => {
-                setCarpetaPadre(null); // Para carpeta raíz
+                setCarpetaPadre(null);
                 setModalOpen(true);
               }}
-              style={{
-                backgroundColor: '#2196f3',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#1976d2'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#2196f3'}
+              className="periodo-detalle__btn periodo-detalle__btn--primary"
             >
               Crear Carpeta Principal
             </button>
@@ -400,17 +329,7 @@ const PeriodoDetalle = ({ periodo }) => {
           {carpetaActual && (
             <button 
               onClick={volverAtras}
-              style={{
-                backgroundColor: '#757575',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginRight: '12px'
-              }}
+              className="periodo-detalle__btn periodo-detalle__btn--secondary"
             >
               ← Volver Atrás
             </button>
@@ -418,93 +337,123 @@ const PeriodoDetalle = ({ periodo }) => {
           <input
             type="text"
             placeholder="Buscar..."
-            style={{ 
-              padding: '8px 12px', 
-              width: '180px', 
-              border: '1px solid #ddd', 
-              borderRadius: '6px',
-              fontSize: '14px'
-            }}
+            className="periodo-detalle__search"
           />
         </div>
       </div>
 
-      {/* Lista de carpetas del período */}
-      <div style={{ margin: '20px 24px', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#333' }}>Carpetas del Período</h3>
-        
-{/* Navegación breadcrumb */}
-        {(carpetaActual || rutaCarpetas.length > 0) && renderBreadcrumb()}
-        
-        {/* Botones para carpeta actual */}
-        {carpetaActual && (
-          <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button 
-              onClick={() => {
-                setCarpetaPadre(carpetaActual);
-                setModalOpen(true);
-              }}
-              style={{
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              + Crear Subcarpeta en "{carpetaActual.nombre}"
-            </button>
+      {/* Área de contenido con scroll */}
+      <div className="periodo-detalle__content">
+        <div className="periodo-detalle__card">
+          
+          {/* Barra de herramientas compacta */}
+          <div className="periodo-detalle__toolbar">
+            <h3 className="periodo-detalle__toolbar-title">
+              {carpetaActual ? `Contenido de "${carpetaActual.nombre}"` : 'Carpetas del Período'}
+            </h3>
             
-            <button 
-              onClick={() => abrirModalSubirArchivo(carpetaActual)}
-              style={{
-                backgroundColor: '#ff9800',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-            >
-              📄 Subir Archivo
-            </button>
-          </div>
-        )}
-
-        {/* Lista de carpetas */}
-        {(() => {
-          const carpetasAMostrar = obtenerCarpetasAMostrar();
-          
-          if (carpetasAMostrar.length === 0) {
-            return (
-              <div style={{ textAlign: 'center', color: '#888', fontStyle: 'italic', padding: '20px' }}>
-                {carpetaActual 
-                  ? `No hay subcarpetas en "${carpetaActual.nombre}". Haz clic en "Crear Subcarpeta" para agregar una.`
-                  : "No hay carpetas en este período aún. Haz clic en 'Crear Carpeta Principal' para comenzar."
-                }
-              </div>
-            );
-          }
-          
-          return (
-            <div>
-              {carpetasAMostrar.map(carpeta => renderCarpeta(carpeta))}
+            <div className="periodo-detalle__toolbar-controls">
+              {/* Botones para carpeta actual */}
+              {carpetaActual && (
+                <>
+                  <button 
+                    onClick={() => {
+                      setCarpetaPadre(carpetaActual);
+                      setModalOpen(true);
+                    }}
+                    className="periodo-detalle__btn--small periodo-detalle__btn--success"
+                  >
+                    + Subcarpeta
+                  </button>
+                  
+                  <button 
+                    onClick={() => abrirModalSubirArchivo(carpetaActual)}
+                    className="periodo-detalle__btn--small periodo-detalle__btn--warning"
+                  >
+                    📄 Archivo
+                  </button>
+                </>
+              )}
+              
+              {/* Acordeón de vista */}
+              <AcordeonVista 
+                modoVista={modoVista} 
+                onModoVistaChange={setModoVista} 
+              />
             </div>
-          );
-        })()}
-        
-        {/* Mostrar archivos cuando estemos dentro de una carpeta */}
-        {carpetaActual && (
-          <ListaArchivos 
-            carpetaId={carpetaActual.id}
-            onUpload={handleArchivoSubido}
-          />
-        )}
+          </div>
+          
+          {/* Navegación breadcrumb */}
+          {(carpetaActual || rutaCarpetas.length > 0) && renderBreadcrumb()}
+
+          {/* Contenido principal con scroll */}
+          <div className="periodo-detalle__scroll-area">
+            {(() => {
+              const carpetasAMostrar = obtenerCarpetasAMostrar();
+              
+              if (carpetasAMostrar.length === 0 && !carpetaActual) {
+                return (
+                  <div className="periodo-detalle__empty-message">
+                    No hay carpetas en este período aún. Haz clic en 'Crear Carpeta Principal' para comenzar.
+                  </div>
+                );
+              }
+              
+              // Renderizar carpetas si las hay
+              const renderizarCarpetas = () => {
+                if (carpetasAMostrar.length === 0) return null;
+                
+                const props = {
+                  carpetas: carpetasAMostrar,
+                  onEntrarCarpeta: entrarEnCarpeta,
+                  onContextMenu: handleContextMenuCarpeta
+                };
+
+                switch (modoVista) {
+                  case 'iconos-grandes':
+                    return <VistaIconosGrandes {...props} />;
+                  case 'iconos-medianos':
+                    return <VistaIconosMedianos {...props} />;
+                  case 'iconos-pequenos':
+                    return <VistaIconosPequenos {...props} />;
+                  case 'detalles':
+                    return <VistaDetalles {...props} />;
+                  case 'mosaicos':
+                    return <VistaMosaicos {...props} />;
+                  case 'contenido':
+                    return <VistaContenido {...props} />;
+                  case 'lista-carpetas':
+                  default:
+                    return <VistaListaCarpetas {...props} />;
+                }
+              };
+
+              return (
+                <>
+                  {renderizarCarpetas()}
+                  
+                  {/* Mostrar archivos cuando estemos dentro de una carpeta */}
+                  {carpetaActual && (
+                    <div className="periodo-detalle__section-divider">
+                      <ListaArchivos 
+                        carpetaId={carpetaActual.id}
+                        onUpload={handleArchivoSubido}
+                        modoVista={modoVista}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Mensaje cuando no hay subcarpetas en la carpeta actual */}
+                  {carpetaActual && carpetasAMostrar.length === 0 && (
+                    <div className="periodo-detalle__empty-message periodo-detalle__empty-message--compact">
+                      No hay subcarpetas en "{carpetaActual.nombre}". Haz clic en "Subcarpeta" para agregar una.
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </div>
       </div>
 
       <CrearCarpetaModal
@@ -561,8 +510,9 @@ const PeriodoDetalle = ({ periodo }) => {
         }}
         onUploaded={handleArchivoSubido}
       />
-    </>
+    </div>
   );
 };
 
 export default PeriodoDetalle;
+        
