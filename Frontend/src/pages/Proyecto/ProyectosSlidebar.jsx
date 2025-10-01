@@ -5,7 +5,8 @@ import BACKEND_URL from "../../service/backend";
 import CrearProyectoModal from "./components/CrearProyectoModal";
 import BotonNuevoProyecto from "./components/BotonNuevoProyecto";
 import ProyectosList from '../../features/proyectos/ProyectosList';
-import ProyectoDetalle from '../../features/proyectos/ProyectoDetalle';
+import ProyectoCarpetasDetalle from '../../features/proyectos/ProyectoCarpetasDetalle';
+
 import './ProyectosSlidebar.css'; // <-- 1. Importa el nuevo archivo CSS
 
 const PROYECTOS_BLOQUE_ID = 1;
@@ -57,9 +58,12 @@ const ProyectosSlidebar = ({ onProyectoClick }) => {
       />
 
       {/* 3. Envuelve el detalle en su propio contenedor para darle estilo */}
+
+      {/* Mostrar detalle de carpetas del proyecto seleccionado */}
       <div className="proyectos-main-content">
-        <ProyectoDetalle proyecto={selectedProyecto} />
+        {selectedProyecto && <ProyectoCarpetasDetalle proyecto={selectedProyecto} />}
       </div>
+
 
       <CrearProyectoModal
         isOpen={modalOpen}

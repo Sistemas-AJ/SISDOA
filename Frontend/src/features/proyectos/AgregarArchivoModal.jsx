@@ -3,30 +3,51 @@ import "./ProyectoDetalle.css";
 
 const initialState = {
   nombre: "",
-  fecha_creacion: "",
   archivo: null,
+  ruta_fisica: "",
+  tipo_archivo: "",
+  id_carpeta: null,
+  fecha_creacion: "",
+  fecha_modificacion: "",
 };
 
-const AgregarArchivoModal = ({ isOpen, onClose, onSubmit }) => {
+
+const AgregarArchivoModal = ({ isOpen, onClose, onSubmit, idCarpeta }) => {
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
+
+  React.useEffect(() => {
+    if (isOpen && idCarpeta) {
+      setForm(f => ({ ...initialState, id_carpeta: idCarpeta }));
+    }
+  }, [isOpen, idCarpeta]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "archivo" && files.length > 0) {
-      setForm({ ...form, archivo: files[0] });
-      setPreview(URL.createObjectURL(files[0]));
+      const file = files[0];
+      // Detectar ruta física (fake, solo nombre para frontend), tipo y fecha
+      const now = new Date();
+      setForm(f => ({
+        ...f,
+        archivo: file,
+        ruta_fisica: file.name,
+        tipo_archivo: file.type,
+        fecha_creacion: now.toISOString().slice(0, 10),
+        fecha_modificacion: now.toISOString().slice(0, 10),
+      }));
+      setPreview(URL.createObjectURL(file));
     } else {
-      setForm({ ...form, [name]: value });
+      setForm(f => ({ ...f, [name]: value }));
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.nombre || !form.fecha_creacion || !form.archivo) {
+    if (!form.nombre || !form.archivo || !form.id_carpeta) {
       setError("Todos los campos son obligatorios");
       return;
     }
@@ -37,9 +58,6 @@ const AgregarArchivoModal = ({ isOpen, onClose, onSubmit }) => {
     onClose();
   };
 
-  // Detectar tipo de archivo
-  const tipoArchivo = form.archivo ? form.archivo.type : "";
-
   return (
     <div className="modal-overlay">
       <div className="modal">
@@ -48,16 +66,16 @@ const AgregarArchivoModal = ({ isOpen, onClose, onSubmit }) => {
           <label>Nombre del archivo
             <input name="nombre" value={form.nombre} onChange={handleChange} required />
           </label>
-          <label>Fecha de creación
-            <input type="date" name="fecha_creacion" value={form.fecha_creacion} onChange={handleChange} required />
-          </label>
           <label>Archivo
             <input type="file" name="archivo" accept="*" onChange={handleChange} required />
           </label>
           {form.archivo && (
             <div style={{ margin: '10px 0' }}>
-              <b>Tipo de archivo:</b> {tipoArchivo}
-              {preview && tipoArchivo.startsWith('image/') && (
+              <b>Tipo de archivo:</b> {form.tipo_archivo || 'Desconocido'}<br />
+              <b>Ruta física:</b> {form.ruta_fisica}<br />
+              <b>Fecha de creación:</b> {form.fecha_creacion}<br />
+              <b>Fecha de modificación:</b> {form.fecha_modificacion}
+              {preview && form.tipo_archivo && form.tipo_archivo.startsWith('image/') && (
                 <div><img src={preview} alt="preview" style={{ maxWidth: 120, marginTop: 8 }} /></div>
               )}
             </div>

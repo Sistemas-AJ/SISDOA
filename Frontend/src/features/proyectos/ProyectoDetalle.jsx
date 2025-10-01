@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./ProyectoDetalle.css";
 import AgregarArchivoModal from "./AgregarArchivoModal";
-import CrearCarpetaModal from "./CrearCarpetaModal";
+import ProyectoCarpetasDetalle from "./ProyectoCarpetasDetalle";
 
 const ProyectoDetalle = ({ proyecto }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -34,14 +34,8 @@ const ProyectoDetalle = ({ proyecto }) => {
           />
         </div>
       </div>
-      <CrearCarpetaModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAgregarArchivo}
-        id_modulo={proyecto.id}
-        carpetasPadre={proyecto.carpetas}
-      />
-      {/* Aquí puedes mostrar archivos o más info del proyecto */}
+      {/* Gestión de carpetas y archivos del proyecto */}
+      <ProyectoCarpetasDetalle proyecto={proyecto} />
     </>
   );
 };
