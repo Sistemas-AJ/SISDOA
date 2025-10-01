@@ -1,0 +1,23 @@
+/* Estilos para el contenedor principal de la página de proyectos */
+.proyectos-content {
+	margin-left: 5px;
+	padding: 24px;
+}
+
+/* Estilos para la lista de proyectos */
+.proyectos-list-wrapper {
+	width: 100%;
+}
+.proyectos-list {
+	margin-top: 24px;
+}
+.proyecto-item {
+	display: flex;
+	align-items: center;
+	margin-bottom: 12px;
+}
+.proyecto-icon {
+	width: 32px;
+	height: 32px;
+	margin-right: 8px;
+}

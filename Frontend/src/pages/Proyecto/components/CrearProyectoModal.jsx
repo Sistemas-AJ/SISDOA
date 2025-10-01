@@ -18,7 +18,7 @@ const CrearProyectoModal = ({ isOpen, onClose, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // CAMBIO 2: Usamos "isOpen" para decidir si se muestra el modal
+  // Usamos "isOpen" para decidir si se muestra el modal
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -27,46 +27,40 @@ const CrearProyectoModal = ({ isOpen, onClose, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // IMPORTANTE: La lógica de creación de proyecto ya está aquí dentro.
-    // La función que pasas como "onSubmit" en el componente padre 
-    // está duplicando la lógica. Deberías elegir una de las dos.
-    
-    // Por ahora, mantendremos la lógica detallada que ya teníamos aquí.
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/proyectos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: form.nombre_proyecto, descripcion: form.descripcion })
-      });
-      if (!res.ok) throw new Error("No se pudo crear el proyecto");
-      
-      const proyecto = await res.json();
+      // Define el id_bloque correspondiente a PROYECTO (ajusta según tu base de datos)
+      const id_bloque = 1; // <-- Cambia este valor si tu id de bloque de proyectos es diferente
+
+      // Construye el array de metadatos
       const metadatos = [
         { clave: "autor_asignado", valor: form.autor_asignado },
         { clave: "editor_asignado", valor: form.editor_asignado },
         { clave: "tipo_contenido", valor: form.tipo_contenido },
         { clave: "fecha_asignada", valor: form.fecha_asignada },
         { clave: "estado", valor: form.estado },
+        { clave: "descripcion", valor: form.descripcion }
       ];
 
-      for (const meta of metadatos) {
-        await fetch(`${BACKEND_URL}/metadatos/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_documento: proyecto.id, clave: meta.clave, valor: meta.valor })
-        });
-      }
+      // Enviar todo en un solo request al endpoint de módulos
+      const res = await fetch(`${BACKEND_URL}/modulos/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: form.nombre_proyecto,
+          tipo: "PROYECTO",
+          id_bloque,
+          metadatos
+        })
+      });
 
-      setLoading(false);
-      setForm(initialState);
-      
-      // CAMBIO 3: Llamamos a onSubmit para que el padre refresque la lista de proyectos
-      onSubmit && onSubmit(); 
-      
-      onClose();
+      if (!res.ok) throw new Error("No se pudo crear el proyecto");
+  const nuevoProyecto = await res.json();
+  setLoading(false);
+  setForm(initialState);
+  onSubmit && onSubmit(nuevoProyecto); // Pasa el nuevo proyecto al callback
+  onClose();
     } catch (err) {
       setError(err.message);
       setLoading(false);

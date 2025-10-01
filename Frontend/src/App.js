@@ -7,8 +7,7 @@ import Appbar from './components/appbar/appbar';
 import Periodos from './pages/Periodo/periodos';
 import PeriodosSlidebar from './pages/Periodo/PeriodosSlidebar';
 import Proyectos from './pages/Proyecto/proyectos';
-import ProyectosSlidebar from './pages/Proyecto/ProyectosSlidebar';
-
+// No es necesario importar ProyectosSlidebar aquí si Proyectos ya lo maneja
 
 function App() {
   return (
@@ -18,15 +17,14 @@ function App() {
         <Route path="/periodos" element={
           <>
             <PeriodosSlidebar />
-            <Periodos />
+            <Periodos /> 
           </>
         } />
-        <Route path="/proyectos" element={
-          <>
-            <ProyectosSlidebar />
-            <Proyectos />
-          </>
-        } />
+        <Route 
+          path="/proyectos" 
+          // Renderiza SOLO el componente de la página 'Proyectos'
+          element={<Proyectos />} 
+        />
       </Routes>
     </Router>
   );

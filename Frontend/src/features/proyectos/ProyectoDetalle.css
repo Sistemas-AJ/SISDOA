@@ -1,0 +1,29 @@
+/* Estilos para el detalle de un proyecto */
+.proyecto-detalle {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 32px;
+  min-width: 350px;
+  max-width: 600px;
+}
+
+.btn-agregar-archivo {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 16px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background 0.2s;
+}
+.btn-agregar-archivo:hover {
+  background: #1565c0;
+}
+
+.proyecto-buscar-input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+}

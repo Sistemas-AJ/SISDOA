@@ -1,0 +1,11 @@
+/* Contenedor principal que organizará el sidebar y el contenido */
+.proyectos-layout-container {
+  display: flex; /* <-- La magia de Flexbox para alinear en horizontal */
+  flex-direction: row; /* Asegura que se pongan uno al lado del otro */
+}
+
+/* Contenedor para el contenido principal a la derecha del sidebar */
+.proyectos-main-content {
+  flex-grow: 1;
+  overflow-y: auto;
+}
