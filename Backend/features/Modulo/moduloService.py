@@ -27,8 +27,22 @@ def create_modulo(db: Session, modulo: ModuloCreate):
 def update_modulo(db: Session, modulo_id: int, modulo: ModuloCreate):
     db_modulo = get_modulo(db, modulo_id)
     if db_modulo:
+        # Actualizar campos básicos del módulo
         db_modulo.nombre = modulo.nombre
         db_modulo.tipo = modulo.tipo
+        if hasattr(modulo, 'id_bloque') and modulo.id_bloque:
+            db_modulo.id_bloque = modulo.id_bloque
+        
+        # Actualizar metadatos si se proporcionan
+        if hasattr(modulo, 'metadatos') and modulo.metadatos:
+            # Eliminar metadatos existentes
+            db.query(MetadatoModulo).filter(MetadatoModulo.id_modulo == modulo_id).delete()
+            
+            # Agregar nuevos metadatos
+            for metadato in modulo.metadatos:
+                db_metadato = MetadatoModulo(id_modulo=modulo_id, clave=metadato.clave, valor=metadato.valor)
+                db.add(db_metadato)
+        
         db.commit()
         db.refresh(db_modulo)
     return db_modulo

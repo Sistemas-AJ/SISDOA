@@ -2,7 +2,7 @@ import React from "react";
 import "./Slidebar.css";
 import Card from "../Card/Card";
 
-const Slidebar = ({ items = [], icon: IconComponent, onItemClick, extraTop }) => {
+const Slidebar = ({ items = [], icon: IconComponent, onItemClick, onContextMenu, extraTop }) => {
   return (
     <div className="slidebar">
       {extraTop && <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>{extraTop}</div>}
@@ -13,6 +13,7 @@ const Slidebar = ({ items = [], icon: IconComponent, onItemClick, extraTop }) =>
             icon={IconComponent ? <IconComponent /> : null}
             title={item.nombre}
             onClick={() => onItemClick && onItemClick(item)}
+            onContextMenu={(e) => onContextMenu && onContextMenu(e, item)}
           />
         ))}
       </div>
