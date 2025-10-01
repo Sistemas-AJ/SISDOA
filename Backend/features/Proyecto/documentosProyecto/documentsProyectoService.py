@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .documentsProyectoModel import Documento
+from ....models.documentsModel import Documento
 from .documentsProyectoSchema import DocumentoCreate, DocumentoUpdate
 
 def get_documentos(db: Session):

@@ -33,7 +33,7 @@ const CrearCarpetaModal = ({ isOpen, onClose, id_modulo, id_padre = null, onCrea
       fecha_creacion: form.fecha_creacion,
     };
     try {
-      const res = await fetch("/carpetas-proyecto/carpetas", {
+  const res = await fetch(`${BACKEND_URL}/carpetas-proyecto/carpetas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(carpetaData),

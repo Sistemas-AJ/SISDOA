@@ -38,6 +38,8 @@ const ProyectoDetalle = ({ proyecto }) => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleAgregarArchivo}
+        id_modulo={proyecto.id}
+        carpetasPadre={proyecto.carpetas}
       />
       {/* Aquí puedes mostrar archivos o más info del proyecto */}
     </>
