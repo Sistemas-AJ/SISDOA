@@ -1,0 +1,348 @@
+/* PeriodoDetalle.css - Estilos para el componente PeriodoDetalle */
+
+/* Contenedor principal */
+.periodo-detalle {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+/* Cabecera */
+.periodo-detalle__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.periodo-detalle__title {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+}
+
+.periodo-detalle__meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.periodo-detalle__meta-item {
+  color: #555;
+}
+
+.periodo-detalle__meta-item b {
+  font-weight: 600;
+}
+
+.periodo-detalle__status {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.periodo-detalle__status--activo {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.periodo-detalle__status--completado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.periodo-detalle__status--pausa {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.periodo-detalle__status--default {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+/* Controles de la cabecera */
+.periodo-detalle__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.periodo-detalle__btn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.periodo-detalle__btn--primary {
+  background-color: #2196f3;
+  color: white;
+}
+
+.periodo-detalle__btn--primary:hover {
+  background-color: #1976d2;
+}
+
+.periodo-detalle__btn--secondary {
+  background-color: #757575;
+  color: white;
+}
+
+.periodo-detalle__btn--secondary:hover {
+  background-color: #616161;
+}
+
+.periodo-detalle__search {
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Área de contenido */
+.periodo-detalle__content {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.periodo-detalle__card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Barra de herramientas */
+.periodo-detalle__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.periodo-detalle__toolbar-title {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.periodo-detalle__toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.periodo-detalle__btn--small {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.periodo-detalle__btn--success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.periodo-detalle__btn--success:hover {
+  background-color: #43a047;
+}
+
+.periodo-detalle__btn--warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.periodo-detalle__btn--warning:hover {
+  background-color: #f57c00;
+}
+
+/* Breadcrumb */
+.periodo-detalle__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.periodo-detalle__breadcrumb-item {
+  cursor: pointer;
+  color: #2196f3;
+  text-decoration: none;
+}
+
+.periodo-detalle__breadcrumb-item:hover {
+  text-decoration: underline;
+}
+
+.periodo-detalle__breadcrumb-item--current {
+  color: #333;
+  font-weight: bold;
+  cursor: default;
+}
+
+.periodo-detalle__breadcrumb-item--current:hover {
+  text-decoration: none;
+}
+
+.periodo-detalle__breadcrumb-separator {
+  color: #666;
+}
+
+/* Área de contenido scrolleable */
+.periodo-detalle__scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+/* Mensajes vacíos */
+.periodo-detalle__empty-message {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+.periodo-detalle__empty-message--compact {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Separador entre carpetas y archivos */
+.periodo-detalle__section-divider {
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .periodo-detalle__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .periodo-detalle__controls {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .periodo-detalle__content {
+    padding: 12px;
+  }
+
+  .periodo-detalle__card {
+    padding: 16px;
+  }
+
+  .periodo-detalle__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .periodo-detalle__toolbar-controls {
+    justify-content: center;
+  }
+
+  .periodo-detalle__search {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .periodo-detalle__scroll-area {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .periodo-detalle__meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .periodo-detalle__btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .periodo-detalle__toolbar-title {
+    font-size: 16px;
+  }
+
+  .periodo-detalle__breadcrumb {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+/* Animaciones */
+.periodo-detalle__btn {
+  transition: all 0.2s ease;
+}
+
+.periodo-detalle__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.periodo-detalle__card {
+  transition: box-shadow 0.2s ease;
+}
+
+.periodo-detalle__scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+.periodo-detalle__scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.periodo-detalle__scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.periodo-detalle__scroll-area::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+.periodo-detalle__scroll-area::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
