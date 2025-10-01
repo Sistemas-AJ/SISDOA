@@ -7,13 +7,14 @@ import CrearPeriodoModal from "./components/CrearPeriodoModal";
 
 import BotonNuevoPeriodo from "./components/BotonNuevoPeriodo";
 
+const BLOQUE_PERIODOS_ID = 2; // Cambia esto si tu id de bloque de periodos es diferente
 
 const PeriodosSlidebar = () => {
   const [periodos, setPeriodos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
 
   const fetchPeriodos = () => {
-    fetch(`${BACKEND_URL}/periodos/`)
+    fetch(`${BACKEND_URL}/bloques/${BLOQUE_PERIODOS_ID}`)
       .then((res) => res.json())
       .then((data) => setPeriodos(Array.isArray(data) ? data : []))
       .catch(() => setPeriodos([]));

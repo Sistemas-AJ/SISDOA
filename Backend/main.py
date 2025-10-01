@@ -23,7 +23,6 @@ app.add_middleware(
 app.include_router(bloques_router)
 app.include_router(periodos_router)
 app.include_router(modulo_router)
-app.include_router(metadatos_modulo_router)
 
 @app.get("/")
 def read_root():

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .moduloService import get_modulos, get_modulo, create_modulo, update_modulo, delete_modulo
-from .moduloSchema import ModuloCreate, ModuloUpdate, ModuloOut
+from .moduloSchema import ModuloCreate, ModuloOut
 from db.db import get_db
 
 router = APIRouter(prefix="/modulos", tags=["modulos"])
@@ -22,7 +22,7 @@ def create_new_modulo(modulo: ModuloCreate, db: Session = Depends(get_db)):
     return create_modulo(db, modulo)
 
 @router.put("/{modulo_id}", response_model=ModuloOut)
-def update_existing_modulo(modulo_id: int, modulo: ModuloUpdate, db: Session = Depends(get_db)):
+def update_existing_modulo(modulo_id: int, modulo: ModuloCreate, db: Session = Depends(get_db)):
     updated = update_modulo(db, modulo_id, modulo)
     if not updated:
         raise HTTPException(status_code=404, detail="Módulo no encontrado")

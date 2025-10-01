@@ -1,14 +1,10 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from datetime import datetime
-
-Base = declarative_base()
+from db.base import Base  # <--- Usa el Base común
 
 class Bloque(Base):
     __tablename__ = "Bloques"
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, nullable=False)
-    tipo = Column(String, nullable=False, default="periodo")  # Debe ser 'periodo' para los periodos
+    tipo = Column(String, nullable=False)
     descripcion = Column(String, nullable=True)
-    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+    modulos = relationship("Modulo", backref="bloque")

@@ -1,16 +1,14 @@
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
-
-
+from typing import Optional, List
+from features.Modulo.moduloSchema import ModuloOut
 
 class BloqueBase(BaseModel):
-    nombre: str
     tipo: str
     descripcion: Optional[str] = None
 
 class BloqueOut(BloqueBase):
     id: int
+    modulos: List[ModuloOut] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True

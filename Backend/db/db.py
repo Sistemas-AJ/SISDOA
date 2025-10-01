@@ -41,6 +41,13 @@ def crear_base_de_datos(db_file):
             /* --- 1. Contenedor Raíz de Todo el Proyecto --- */
             CREATE TABLE IF NOT EXISTS Bloques (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tipo TEXT NOT NULL,
+                descripcion TEXT,
+            );
+
+            /* --- 2. Módulos, que pertenecen a un Bloque --- */
+            CREATE TABLE IF NOT EXISTS Modulos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
                 descripcion TEXT
             );
