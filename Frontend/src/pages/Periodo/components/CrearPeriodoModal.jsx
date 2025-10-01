@@ -32,15 +32,7 @@ const CrearPeriodoModal = ({ open, onClose, onCreated }) => {
     setLoading(true);
     setError("");
     try {
-      // 1. Crear el periodo (bloque) en el backend
-      const res = await fetch(`${BACKEND_URL}/periodos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: form.nombre, descripcion: form.estado_proyecto })
-      });
-      if (!res.ok) throw new Error("No se pudo crear el periodo");
-      const periodo = await res.json();
-      // 2. Crear los metadatos asociados (uno por cada campo extra)
+      // Construir el array de metadatos (clave/valor)
       const metadatos = [
         { clave: "estado_proyecto", valor: form.estado_proyecto },
         { clave: "responsable_proyecto", valor: form.responsable_proyecto },
@@ -53,13 +45,23 @@ const CrearPeriodoModal = ({ open, onClose, onCreated }) => {
         { clave: "prioridad", valor: form.prioridad },
         { clave: "fecha_ultima_revision", valor: form.fecha_ultima_revision }
       ];
-      for (const meta of metadatos) {
-        await fetch(`${BACKEND_URL}/metadatos/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id_documento: periodo.id, clave: meta.clave, valor: meta.valor })
-        });
-      }
+
+      // Aquí debes poner el id_bloque correspondiente al bloque de periodos (ajusta según tu lógica)
+      const id_bloque = 2; // <-- Cambia esto si tu id de bloque de periodos es diferente
+
+      // Enviar todo en un solo request al endpoint de módulos
+      const res = await fetch(`${BACKEND_URL}/modulos/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: form.nombre,
+          tipo: "PERIODO",
+          id_bloque,
+          metadatos
+        })
+      });
+
+      if (!res.ok) throw new Error("No se pudo crear el periodo");
       setLoading(false);
       setForm(initialState);
       onCreated && onCreated();
