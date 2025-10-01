@@ -1,13 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-
-
-
 from features.Periodo.BloquePeriodo.bloquesPeriodoRouter import router as periodos_router
 from features.Modulo.moduloRouter import router as modulo_router
-
 from features.Proyecto.BloqueProyecto.bloqueProyectoRouter import router as bloques_router
+from features.Proyecto.Carpetas.CarpetasPoryectoRouter import router as carpetas_router
 
 
 app = FastAPI()
@@ -23,9 +19,11 @@ app.add_middleware(
 
 # Registrar el router de bloques
 
+
 app.include_router(bloques_router)
 app.include_router(periodos_router)
 app.include_router(modulo_router)
+app.include_router(carpetas_router)
 
 
 @app.get("/")
