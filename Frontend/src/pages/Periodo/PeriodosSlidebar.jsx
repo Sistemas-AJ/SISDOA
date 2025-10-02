@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Slidebar from "../../components/Slidebar/Slidebar";
-import calendarioSidebarImg from '../../assets/calendarios.png';
+import calendarioSidebarImg from '../../assets/calendario.png';
 import BACKEND_URL from "../../service/backend";
 import CrearPeriodoModal from "./components/CrearPeriodoModal";
 import BotonNuevoPeriodo from "./components/BotonNuevoPeriodo";

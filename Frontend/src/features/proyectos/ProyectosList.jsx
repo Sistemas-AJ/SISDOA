@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import carpetaIcon from "../../assets/carpeta.png";
+import carpetaIcon from "../../assets/carp.png";
 import ContextMenuProyecto from "./ContextMenuProyecto";
 import "./PoyectosList.css";
 
