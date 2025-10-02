@@ -137,3 +137,5 @@ if __name__ == '__main__':
     
     # Llama a la función para crear la estructura
     crear_base_de_datos(nombre_db)
+
+# adrian no carga no se que pasa que dices tu
