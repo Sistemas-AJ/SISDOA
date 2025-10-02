@@ -12,3 +12,4 @@ class Documento(Base):
 	id_carpeta = Column(Integer, ForeignKey("Carpetas.id"), nullable=False)
 	fecha_creacion = Column(String, nullable=False)
 	fecha_modificacion = Column(String, nullable=True)
+	comentario = Column(String, nullable=True)

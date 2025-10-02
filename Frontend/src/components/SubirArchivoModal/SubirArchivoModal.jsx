@@ -4,6 +4,7 @@ import BACKEND_URL from '../../service/backend';
 
 const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [comentario, setComentario] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const { showSuccess, showError } = useNotification();
@@ -12,6 +13,7 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
+    setComentario(""); // Limpiar comentario al seleccionar nuevo archivo
   };
 
   const handleDrop = (e) => {
@@ -38,6 +40,7 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
+    if (comentario) formData.append('comentario', comentario);
 
     try {
       const response = await fetch(`${BACKEND_URL}/documentos/upload/${carpetaId}`, {
@@ -51,6 +54,7 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
         onUploaded && onUploaded(documento);
         onClose();
         setSelectedFile(null);
+        setComentario("");
       } else {
         throw new Error('Error al subir archivo');
       }
@@ -151,37 +155,71 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
             />
           </div>
         ) : (
-          <div style={{ 
-            border: '1px solid #ddd', 
-            borderRadius: '8px', 
-            padding: '16px', 
-            marginBottom: '20px',
-            backgroundColor: '#f9f9f9'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ fontSize: '32px' }}>📄</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                  {selectedFile.name}
+          <>
+            <div style={{ 
+              border: '1px solid #ddd', 
+              borderRadius: '8px', 
+              padding: '16px', 
+              marginBottom: '16px',
+              backgroundColor: '#f9f9f9'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '32px' }}>📄</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                    {selectedFile.name}
+                  </div>
+                  <div style={{ color: '#666', fontSize: '14px' }}>
+                    {formatFileSize(selectedFile.size)} • {selectedFile.type || 'Tipo desconocido'}
+                  </div>
                 </div>
-                <div style={{ color: '#666', fontSize: '14px' }}>
-                  {formatFileSize(selectedFile.size)} • {selectedFile.type || 'Tipo desconocido'}
-                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#f44336',
+                    cursor: 'pointer',
+                    fontSize: '18px'
+                  }}
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedFile(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#f44336',
-                  cursor: 'pointer',
-                  fontSize: '18px'
-                }}
-              >
-                ✕
-              </button>
             </div>
-          </div>
+            {/* Campo de comentario opcional con mejor diseño */}
+            <div style={{ marginBottom: '22px', paddingLeft: 4, paddingRight: 4 }}>
+              <label style={{ fontWeight: 600, color: '#1976d2', display: 'block', marginBottom: 6, fontSize: 16, letterSpacing: 0.2 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <svg width="20" height="20" fill="#1976d2" style={{ marginRight: 2 }} viewBox="0 0 24 24"><path d="M12 22c-.28 0-.53-.11-.71-.29l-3.88-3.88H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2h-2.41l-3.88 3.88c-.18.18-.43.29-.71.29zm-7-5h2.59c.27 0 .52.11.71.29L12 19.17l3.71-3.88c.19-.18.44-.29.71-.29H19V5H5v12zm7-2c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                  Comentario <span style={{ color: '#888', fontWeight: 400, fontSize: 14 }}>(opcional)</span>:
+                </span>
+                <textarea
+                  value={comentario}
+                  onChange={e => setComentario(e.target.value)}
+                  placeholder="Agrega un comentario sobre el archivo..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    borderRadius: 8,
+                    border: '1.5px solid #b6c6e3',
+                    padding: '12px 1px',
+                    fontSize: 15.5,
+                    marginTop: 7,
+                    marginBottom: 2,
+                    background: '#f7faff',
+                    color: '#222',
+                    boxShadow: '0 1px 4px rgba(25, 118, 210, 0.07)',
+                    outline: 'none',
+                    transition: 'border 0.2s',
+                    resize: 'vertical',
+                  }}
+                  onFocus={e => e.target.style.border = '1.5px solid #1976d2'}
+                  onBlur={e => e.target.style.border = '1.5px solid #b6c6e3'}
+                />
+              </label>
+            </div>
+          </>
         )}
         
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>

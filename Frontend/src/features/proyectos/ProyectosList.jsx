@@ -1,33 +1,44 @@
-import React, { useEffect, useState } from "react";
-import BACKEND_URL from "../../service/backend";
+import React, { useState } from "react";
 import carpetaIcon from "../../assets/carpeta.png";
+import ContextMenuProyecto from "./ContextMenuProyecto";
 import "./PoyectosList.css";
 
-const ID_BLOQUE_PROYECTO = 1; // Cambia este valor si tu id de bloque de proyectos es diferente
 
-const ProyectosList = ({ onSelect }) => {
-  const [proyectos, setProyectos] = useState([]);
+const ProyectosList = ({ proyectos = [], onSelect, onVerDetalle, onEditar, onEliminar }) => {
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, proyecto: null });
 
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/modulos/`)
-      .then(res => res.json())
-      .then(data => {
-        // Filtra solo los proyectos
-        const soloProyectos = data.filter(
-          m => m.tipo === "PROYECTO" && m.id_bloque === ID_BLOQUE_PROYECTO
-        );
-        setProyectos(soloProyectos);
-      });
-  }, []);
+  const handleContextMenu = (e, proy) => {
+    e.preventDefault();
+    setContextMenu({ visible: true, x: e.clientX, y: e.clientY, proyecto: proy });
+  };
+
+  const closeContextMenu = () => setContextMenu({ visible: false, x: 0, y: 0, proyecto: null });
 
   return (
     <div className="proyectos-list-wrapper">
-      {proyectos.map(proy => (
-        <div key={proy.id} className="proyecto-item" style={{ cursor: 'pointer' }}>
-          <img src={carpetaIcon} alt="carpeta" className="proyecto-icon" onClick={() => onSelect && onSelect(proy)} />
-          <span onClick={() => onSelect && onSelect(proy)}>{proy.nombre}</span>
-        </div>
-      ))}
+      <div className="proyectos-mosaico">
+        {proyectos.map(proy => (
+          <div
+            key={proy.id}
+            className="proyecto-mosaico-item"
+            style={{ cursor: 'pointer' }}
+            onContextMenu={e => handleContextMenu(e, proy)}
+            onClick={() => onSelect && onSelect(proy)}
+          >
+            <img src={carpetaIcon} alt="carpeta" className="proyecto-mosaico-icon" />
+            <span className="proyecto-mosaico-nombre">{proy.nombre}</span>
+          </div>
+        ))}
+      </div>
+      <ContextMenuProyecto
+        x={contextMenu.x}
+        y={contextMenu.y}
+        visible={contextMenu.visible}
+        onClose={closeContextMenu}
+        onVer={() => onVerDetalle && onVerDetalle(contextMenu.proyecto)}
+        onEditar={() => onEditar && onEditar(contextMenu.proyecto)}
+        onEliminar={() => onEliminar && onEliminar(contextMenu.proyecto)}
+      />
     </div>
   );
 };

@@ -32,10 +32,13 @@ def obtener_documento(documento_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Documento no encontrado")
     return documento
 
+from fastapi import Form
+
 @router.post("/upload/{carpeta_id}", response_model=DocumentoOut)
 async def subir_documento(
     carpeta_id: int,
     file: UploadFile = File(...),
+    comentario: str = Form(None),
     db: Session = Depends(get_db)
 ):
     try:
@@ -55,9 +58,9 @@ async def subir_documento(
             ruta_fisica=file_path,
             tipo_archivo=file.content_type or "application/octet-stream",
             tamaño_bytes=len(content),
-            id_carpeta=carpeta_id
+            id_carpeta=carpeta_id,
+            comentario=comentario
         )
-        
         return create_documento(db, documento_data)
         
     except Exception as e:

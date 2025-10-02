@@ -50,7 +50,8 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
       id: doc.id,
       carpetaId: doc.id_carpeta,
       categoria: getCategoryFromMime(doc.tipo_archivo),
-      icono: getFileIcon(doc.tipo_archivo)
+      icono: getFileIcon(doc.tipo_archivo),
+      comentario: doc.comentario || ""
     };
   };
 
@@ -490,6 +491,12 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
                     <label>Tipo MIME:</label>
                     <span className="visualizador__mime">{metadata.tipoMime}</span>
                   </div>
+                  {metadata.comentario && (
+                    <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
+                      <label>Comentario:</label>
+                      <span style={{ background: '#f3f6fa', borderRadius: 6, padding: '6px 10px', display: 'block', color: '#333' }}>{metadata.comentario}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

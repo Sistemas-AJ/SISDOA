@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./ProyectoDetalle.css";
 import BACKEND_URL from "../../service/backend";
 const initialState = {
   nombre: "",

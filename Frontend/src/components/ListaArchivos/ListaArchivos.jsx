@@ -3,7 +3,7 @@ import { useNotification } from '../../contexts/NotificationContext';
 import BACKEND_URL from '../../service/backend';
 import VisualizadorArchivos from '../VisualizadorArchivos/VisualizadorArchivos';
 
-const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) => {
+const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes', refresh }) => {
   const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -33,7 +33,7 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
 
   useEffect(() => {
     fetchDocumentos();
-  }, [carpetaId]);
+  }, [carpetaId, refresh]);
 
   const handleDownload = async (documento) => {
     try {

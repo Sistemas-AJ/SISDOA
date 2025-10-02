@@ -1,33 +1,39 @@
+
 import './App.css';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-import Appbar from './components/appbar/appbar';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import Appbar from './components/AppBar/AppBar';
 import { NotificationProvider } from './contexts/NotificationContext';
-
 import Periodos from './pages/Periodo/periodos';
 import PeriodosSlidebar from './pages/Periodo/PeriodosSlidebar';
 import Proyectos from './pages/Proyecto/proyectos';
-// No es necesario importar ProyectosSlidebar aquí si Proyectos ya lo maneja
+import Bienvenida from './components/Bienvenida';
+function AppRoutes() {
+  const location = useLocation();
+  const isProyectos = location.pathname.startsWith('/proyectos');
+  const isPeriodos = location.pathname.startsWith('/periodos');
+  return (
+    <>
+      {isProyectos ? (
+        <Proyectos />
+      ) : isPeriodos ? (
+        <>
+          <PeriodosSlidebar />
+          <Periodos />
+        </>
+      ) : (
+        <Bienvenida />
+      )}
+    </>
+  );
+}
 
 function App() {
   return (
     <NotificationProvider>
       <Router>
         <Appbar />
-        <Routes>
-          <Route path="/periodos" element={
-            <>
-              <PeriodosSlidebar />
-              <Periodos /> 
-            </>
-          } />
-          <Route 
-            path="/proyectos" 
-            // Renderiza SOLO el componente de la página 'Proyectos'
-            element={<Proyectos />} 
-          />
-        </Routes>
+        <AppRoutes />
       </Router>
     </NotificationProvider>
   );
