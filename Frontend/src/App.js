@@ -2,7 +2,7 @@
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
-import Appbar from './components/AppBar/AppBar';
+import Appbar from './components/appbar/appbar';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Periodos from './pages/Periodo/periodos';
 import PeriodosSlidebar from './pages/Periodo/PeriodosSlidebar';

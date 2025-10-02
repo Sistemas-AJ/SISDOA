@@ -54,8 +54,23 @@ const PeriodosSlidebar = () => {
     fetchPeriodos();
   }, []);
 
+  // Efecto para restaurar el periodo seleccionado después de cargar los periodos
+  useEffect(() => {
+    if (periodos.length > 0) {
+      const savedPeriodoId = localStorage.getItem('selectedPeriodoId');
+      if (savedPeriodoId) {
+        const savedPeriodo = periodos.find(p => p.id.toString() === savedPeriodoId);
+        if (savedPeriodo) {
+          setSelectedPeriodo(savedPeriodo);
+        }
+      }
+    }
+  }, [periodos]);
+
   const handlePeriodoClick = (periodo) => {
     setSelectedPeriodo(periodo);
+    // Guardar el periodo seleccionado en localStorage
+    localStorage.setItem('selectedPeriodoId', periodo.id);
   };
 
   const handleContextMenu = (e, item) => {
@@ -93,6 +108,10 @@ const PeriodosSlidebar = () => {
       });
       
       if (response.ok) {
+        // Limpiar navegación guardada del período eliminado
+        localStorage.removeItem(`navegacion_periodo_${periodoId}`);
+        localStorage.removeItem('selectedPeriodoId');
+        
         // Refrescar la lista de períodos
         fetchPeriodos();
         // Si el período eliminado era el seleccionado, limpiar la selección
