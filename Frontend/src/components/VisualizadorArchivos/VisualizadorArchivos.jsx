@@ -9,7 +9,16 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
   const [metadata, setMetadata] = useState({});
   const [previewUrl, setPreviewUrl] = useState(null);
   const [canPreview, setCanPreview] = useState(true);
-  const { showError } = useNotification();
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+  
+  // Estados para edición
+  const [editandoComentario, setEditandoComentario] = useState(false);
+  const [comentarioEditado, setComentarioEditado] = useState('');
+  const [editandoEtiquetas, setEditandoEtiquetas] = useState(false);
+  const [etiquetasEditadas, setEtiquetasEditadas] = useState('');
+  
+  const { showError, showSuccess } = useNotification();
 
   useEffect(() => {
     if (isOpen && documento) {
@@ -17,15 +26,51 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
     }
   }, [isOpen, documento]);
 
+  // Timeout para detectar cuando la vista previa no carga
+  useEffect(() => {
+    if (showPreview && !previewError) {
+      const timeout = setTimeout(() => {
+        // Si después de 10 segundos no hay respuesta del iframe, mostrar error
+        const iframe = document.querySelector('iframe[title*="Vista previa"]');
+        if (iframe) {
+          try {
+            // Intentar acceder al contenido del iframe
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (!iframeDoc || iframeDoc.body?.children.length === 0) {
+              setPreviewError(true);
+            }
+          } catch (e) {
+            // Si no podemos acceder al iframe, probablemente cargó correctamente
+            console.log('Vista previa cargada (contenido externo)');
+          }
+        }
+      }, 10000); // 10 segundos
+
+      return () => clearTimeout(timeout);
+    }
+  }, [showPreview, previewError]);
+
   const loadDocumentData = async () => {
     setLoading(true);
+    setShowPreview(false); // Resetear vista previa
+    setPreviewError(false); // Resetear error de vista previa
+    
     try {
-      // Generar metadatos del archivo
-      const fileMetadata = generateMetadata(documento);
-      setMetadata(fileMetadata);
+      // Obtener datos actualizados del documento desde el backend
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}`);
+      if (response.ok) {
+        const documentoActualizado = await response.json();
+        // Generar metadatos del archivo con datos actualizados
+        const fileMetadata = generateMetadata(documentoActualizado);
+        setMetadata(fileMetadata);
+      } else {
+        // Si falla la carga desde el backend, usar datos locales
+        const fileMetadata = generateMetadata(documento);
+        setMetadata(fileMetadata);
+      }
 
       // Verificar si se puede previsualizar
-      const preview = checkPreviewCapability(documento.tipo_archivo);
+      const preview = checkPreviewCapability(documento.tipo_archivo, documento.nombre_archivo);
       setCanPreview(preview.canPreview);
       
       // Generar URL para previsualización (no fuerza descarga)
@@ -39,6 +84,65 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
     }
   };
 
+  const getCategoryFromFileName = (fileName, mimeType) => {
+    const extension = fileName?.split('.').pop()?.toLowerCase() || '';
+    
+    // Debug: log para verificar extensión y archivo
+    console.log('Categorizando archivo:', fileName, 'Extensión:', extension, 'MIME:', mimeType);
+    
+    // Priorizar extensión para archivos Office
+    if (extension === 'docx' || extension === 'doc') {
+      console.log('Detectado como Word');
+      return 'Documento Word';
+    }
+    if (extension === 'xlsx' || extension === 'xls') {
+      console.log('Detectado como Excel');
+      return 'Hoja de Cálculo Excel';
+    }
+    if (extension === 'pptx' || extension === 'ppt') return 'Presentación PowerPoint';
+    
+    // Otras extensiones comunes
+    if (extension === 'pdf') return 'PDF';
+    if (extension.match(/^(jpg|jpeg|png|gif|bmp|svg|webp|ico|tiff)$/)) return 'Imagen';
+    if (extension.match(/^(mp4|avi|mov|wmv|flv|webm|mkv|m4v)$/)) return 'Video';
+    if (extension.match(/^(mp3|wav|flac|aac|ogg|wma|m4a)$/)) return 'Audio';
+    if (extension.match(/^(txt|rtf|md|markdown)$/)) return 'Documento de Texto';
+    if (extension.match(/^(zip|rar|7z|tar|gz|bz2|xz)$/)) return 'Archivo Comprimido';
+    if (extension.match(/^(js|html|css|json|xml|py|java|cpp|c|cs|php|rb|go|rs)$/)) return 'Código Fuente';
+    
+    // Si no se puede determinar por extensión, usar MIME type como respaldo
+    return getCategoryFromMime(mimeType);
+  };
+
+  const getIconFromFileName = (fileName, mimeType) => {
+    const extension = fileName?.split('.').pop()?.toLowerCase() || '';
+    
+    // Debug: log para verificar extensión y archivo  
+    console.log('Icono para archivo:', fileName, 'Extensión:', extension);
+    
+    // Priorizar extensión para archivos Office
+    if (extension === 'docx' || extension === 'doc') {
+      console.log('Icono Word asignado');
+      return '📝';
+    }
+    if (extension === 'xlsx' || extension === 'xls') {
+      console.log('Icono Excel asignado');
+      return '📊';
+    }
+    if (extension === 'pptx' || extension === 'ppt') return '📈';
+    
+    // Otras extensiones comunes
+    if (extension === 'pdf') return '📋';
+    if (extension.match(/^(jpg|jpeg|png|gif|bmp|svg|webp|ico|tiff)$/)) return '🖼️';
+    if (extension.match(/^(mp4|avi|mov|wmv|flv|webm|mkv|m4v)$/)) return '🎥';
+    if (extension.match(/^(mp3|wav|flac|aac|ogg|wma|m4a)$/)) return '🎵';
+    if (extension.match(/^(txt|rtf|md|markdown)$/)) return '📃';
+    if (extension.match(/^(zip|rar|7z|tar|gz|bz2|xz)$/)) return '🗜️';
+    
+    // Si no se puede determinar por extensión, usar MIME type como respaldo
+    return getFileIcon(mimeType);
+  };
+
   const generateMetadata = (doc) => {
     return {
       nombre: doc.nombre_archivo,
@@ -50,23 +154,34 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
       fechaModificacion: doc.fecha_modificacion ? new Date(doc.fecha_modificacion) : null,
       id: doc.id,
       carpetaId: doc.id_carpeta,
-      categoria: getCategoryFromMime(doc.tipo_archivo),
-      icono: getFileIcon(doc.tipo_archivo),
-      comentario: doc.comentario || ""
+      categoria: getCategoryFromFileName(doc.nombre_archivo, doc.tipo_archivo),
+      icono: getIconFromFileName(doc.nombre_archivo, doc.tipo_archivo),
+      comentario: doc.comentario || "",
+      etiquetas: doc.etiquetas || []
     };
   };
 
-  const checkPreviewCapability = (mimeType) => {
+  const checkPreviewCapability = (mimeType, fileName) => {
     // Siempre permitir previsualización - mostraremos diferentes tipos de vista según el archivo
     return {
       canPreview: true,
-      previewType: getPreviewType(mimeType),
+      previewType: getPreviewType(mimeType, fileName),
       reason: null
     };
   };
 
-  const getPreviewType = (mimeType) => {
+  const getPreviewType = (mimeType, fileName) => {
     if (!mimeType) return 'info';
+    
+    // Debug: log para verificar el tipo de preview
+    console.log('Determinando preview type para:', fileName, 'MIME:', mimeType);
+    
+    // Verificar por extensión también para archivos Office
+    const extension = fileName?.split('.').pop()?.toLowerCase() || '';
+    if (extension === 'docx' || extension === 'doc' || extension === 'xlsx' || extension === 'xls' || extension === 'pptx' || extension === 'ppt') {
+      console.log('Preview type: office (por extensión)');
+      return 'office';
+    }
     
     // Tipos que se pueden previsualizar directamente en el navegador
     if (mimeType.startsWith('image/')) return 'image';
@@ -95,7 +210,10 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
         mimeType === 'application/vnd.ms-powerpoint' ||
         mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-        mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') return 'office';
+        mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+      console.log('Preview type: office (por MIME)');
+      return 'office';
+    }
     
     // Para archivos multimedia, mostrar información
     if (mimeType.startsWith('video/') || mimeType.startsWith('audio/')) return 'media';
@@ -243,8 +361,91 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
     }
   };
 
+  // Funciones para edición de comentarios
+  const iniciarEdicionComentario = () => {
+    setComentarioEditado(metadata.comentario || '');
+    setEditandoComentario(true);
+  };
+
+  const cancelarEdicionComentario = () => {
+    setEditandoComentario(false);
+    setComentarioEditado('');
+  };
+
+  const guardarComentario = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}/comentario`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comentario: comentarioEditado }),
+      });
+
+      if (response.ok) {
+        setMetadata(prev => ({ ...prev, comentario: comentarioEditado }));
+        setEditandoComentario(false);
+        showSuccess('Comentario actualizado correctamente');
+      } else {
+        throw new Error('Error al guardar comentario');
+      }
+    } catch (error) {
+      showError('Error al guardar comentario: ' + error.message);
+    }
+  };
+
+  // Funciones para edición de etiquetas
+  const iniciarEdicionEtiquetas = () => {
+    // Convertir array de etiquetas a string separado por comas
+    const etiquetasActuales = metadata.etiquetas || [];
+    const etiquetasString = etiquetasActuales.map(etq => etq.nombre || etq).join(', ');
+    setEtiquetasEditadas(etiquetasString);
+    setEditandoEtiquetas(true);
+  };
+
+  const cancelarEdicionEtiquetas = () => {
+    setEditandoEtiquetas(false);
+    setEtiquetasEditadas('');
+  };
+
+  const guardarEtiquetas = async () => {
+    try {
+      // Convertir string a array y limpiar espacios
+      const nuevasEtiquetas = etiquetasEditadas
+        .split(',')
+        .map(etq => etq.trim())
+        .filter(etq => etq.length > 0);
+
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}/etiquetas`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ etiquetas: nuevasEtiquetas }),
+      });
+
+      if (response.ok) {
+        setEditandoEtiquetas(false);
+        showSuccess('Etiquetas actualizadas correctamente');
+        
+        // Actualizar las etiquetas en el metadata
+        setMetadata(prev => ({ ...prev, etiquetas: nuevasEtiquetas }));
+        
+        // Llamar callback si existe
+        if (onEtiquetasChange) {
+          onEtiquetasChange(nuevasEtiquetas);
+        }
+      } else {
+        throw new Error('Error al guardar etiquetas');
+      }
+    } catch (error) {
+      showError('Error al guardar etiquetas: ' + error.message);
+    }
+  };
+
   const renderPreview = () => {
-    const previewType = getPreviewType(metadata.tipoMime);
+    const previewType = getPreviewType(metadata.tipoMime, metadata.nombre);
+    console.log('Rendering preview type:', previewType, 'para archivo:', metadata.nombre);
 
     switch (previewType) {
       case 'image':
@@ -303,80 +504,41 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
       case 'pdf':
         return (
           <div className="visualizador__preview-pdf">
-            <embed 
-              src={previewUrl}
+            <iframe 
+              src={`${previewUrl}#toolbar=1&navpanes=0&scrollbar=1&page=1&zoom=FitWidth`}
               type="application/pdf"
               width="100%"
               height="100%"
+              style={{
+                border: 'none',
+                minHeight: '600px',
+                minWidth: '900px'
+              }}
+              title={`Vista previa PDF: ${metadata.nombre}`}
             />
           </div>
         );
 
       case 'office':
-        const getOfficeInfo = () => {
-          const ext = metadata.extension?.toLowerCase();
-          const mime = metadata.tipoMime?.toLowerCase();
-          
-          if (ext === 'docx' || ext === 'doc' || mime?.includes('word')) {
-            return {
-              type: 'Documento Word',
-              icon: '📝',
-              description: 'Documento de procesamiento de texto',
-              features: ['✍️ Texto con formato', '📄 Páginas y secciones', '🖼️ Imágenes y tablas', '📝 Comentarios y revisiones']
-            };
-          } else if (ext === 'xlsx' || ext === 'xls' || mime?.includes('excel')) {
-            return {
-              type: 'Hoja de Cálculo Excel',
-              icon: '📊',
-              description: 'Hoja de cálculo con datos y fórmulas',
-              features: ['🧮 Cálculos y fórmulas', '📈 Gráficos y tablas dinámicas', '📋 Múltiples hojas', '🔢 Análisis de datos']
-            };
-          } else if (ext === 'pptx' || ext === 'ppt' || mime?.includes('powerpoint')) {
-            return {
-              type: 'Presentación PowerPoint',
-              icon: '📈',
-              description: 'Presentación con diapositivas',
-              features: ['🎭 Diapositivas interactivas', '🎨 Animaciones y transiciones', '🖼️ Multimedia integrada', '📊 Gráficos y diagramas']
-            };
-          }
-          
-          return {
-            type: 'Documento Office',
-            icon: '📄',
-            description: 'Archivo de Microsoft Office',
-            features: ['📁 Compatible con Office Suite', '💾 Formato propietario', '🔧 Requiere software específico']
-          };
-        };
-        
-        const officeInfo = getOfficeInfo();
-        
         return (
           <div className="visualizador__preview-office">
-            <div className="visualizador__icon-large">{officeInfo.icon}</div>
-            <h3>{officeInfo.type}</h3>
+            <div className="visualizador__icon-large">{metadata.icono}</div>
+            <h3>Vista Previa No Disponible</h3>
             <p><strong>Archivo:</strong> {metadata.nombre}</p>
-            <p><strong>Formato:</strong> {metadata.extension?.toUpperCase()}</p>
+            <p><strong>Formato:</strong> {metadata.extension}</p>
             <p><strong>Tamaño:</strong> {metadata.tamaño}</p>
             
-            <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h4>📋 Información del Archivo</h4>
-              <p style={{ marginBottom: '12px', fontStyle: 'italic' }}>{officeInfo.description}</p>
-              
-              <h5 style={{ margin: '12px 0 8px 0', fontSize: '14px' }}>🔧 Características:</h5>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {officeInfo.features.map((feature, index) => (
-                  <span key={index} style={{ fontSize: '13px' }}>{feature}</span>
-                ))}
-              </div>
-            </div>
-            
-            <div style={{ marginTop: '16px', padding: '12px', background: '#e3f2fd', borderRadius: '6px', borderLeft: '4px solid #2196f3' }}>
-              <h5 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#1976d2' }}>💡 Cómo abrir este archivo:</h5>
-              <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
-                <p style={{ margin: '4px 0' }}>• <strong>Microsoft Office:</strong> {officeInfo.type.includes('Word') ? 'Word' : officeInfo.type.includes('Excel') ? 'Excel' : 'PowerPoint'}</p>
-                <p style={{ margin: '4px 0' }}>• <strong>Alternativas gratuitas:</strong> LibreOffice, Google Docs/Sheets/Slides</p>
-                <p style={{ margin: '4px 0' }}>• <strong>Online:</strong> Office 365, Google Workspace</p>
-              </div>
+            <div style={{ 
+              margin: '20px 0', 
+              padding: '16px', 
+              background: '#fff3cd', 
+              borderRadius: '8px',
+              border: '1px solid #ffeaa7'
+            }}>
+              <h4 style={{ color: '#856404', marginBottom: '12px', textAlign: 'center' }}>Vista Previa No Disponible</h4>
+              <p style={{ color: '#856404', marginBottom: '16px', textAlign: 'center' }}>
+                Los archivos de Office (Word, Excel, PowerPoint) no se pueden previsualizar en el navegador.
+              </p>
             </div>
           </div>
         );
@@ -443,13 +605,15 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
           <h2 className="visualizador__title">
             {metadata.icono} {metadata.nombre}
           </h2>
-          <button 
-            className="visualizador__close" 
-            onClick={onClose}
-            title="Cerrar"
-          >
-            ✕
-          </button>
+          <div className="visualizador__header-actions">
+            <button 
+              className="visualizador__close" 
+              onClick={onClose}
+              title="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="visualizador__content">
@@ -492,12 +656,102 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
                     <label>Tipo MIME:</label>
                     <span className="visualizador__mime">{metadata.tipoMime}</span>
                   </div>
-                  {metadata.comentario && (
-                    <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
-                      <label>Comentario:</label>
-                      <span style={{ background: '#f3f6fa', borderRadius: 6, padding: '6px 10px', display: 'block', color: '#333' }}>{metadata.comentario}</span>
-                    </div>
-                  )}
+                  <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
+                    <label>Comentario:</label>
+                    {editandoComentario ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <textarea
+                          value={comentarioEditado}
+                          onChange={(e) => setComentarioEditado(e.target.value)}
+                          placeholder="Agregar comentario al archivo..."
+                          className="visualizador__edit-field"
+                          style={{ minHeight: '60px', resize: 'vertical' }}
+                          rows="3"
+                        />
+                        <div className="visualizador__edit-buttons">
+                          <button
+                            onClick={cancelarEdicionComentario}
+                            className="visualizador__edit-btn visualizador__edit-btn--cancel"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={guardarComentario}
+                            className="visualizador__edit-btn visualizador__edit-btn--save"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="visualizador__inline-edit">
+                        <span style={{ flex: 1 }}>
+                          {metadata.comentario || 'Sin comentario'}
+                        </span>
+                        <button
+                          onClick={iniciarEdicionComentario}
+                          className="visualizador__edit-icon"
+                          title="Editar comentario"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Sección de Etiquetas */}
+                  <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
+                    <label>Etiquetas:</label>
+                    {editandoEtiquetas ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={etiquetasEditadas}
+                          onChange={(e) => setEtiquetasEditadas(e.target.value)}
+                          placeholder="Etiquetas separadas por comas (ej: importante, documento, revisión)"
+                          className="visualizador__edit-field"
+                        />
+                        <div className="visualizador__edit-buttons">
+                          <button
+                            onClick={cancelarEdicionEtiquetas}
+                            className="visualizador__edit-btn visualizador__edit-btn--cancel"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={guardarEtiquetas}
+                            className="visualizador__edit-btn visualizador__edit-btn--save"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="visualizador__inline-edit">
+                        <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {metadata.etiquetas && metadata.etiquetas.length > 0 ? (
+                            metadata.etiquetas.map((etiqueta, index) => (
+                              <span
+                                key={index}
+                                className="visualizador__etiqueta"
+                              >
+                                {etiqueta.nombre || etiqueta}
+                              </span>
+                            ))
+                          ) : (
+                            <span style={{ color: '#999', fontSize: '13px' }}>Sin etiquetas</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={iniciarEdicionEtiquetas}
+                          className="visualizador__edit-icon"
+                          title="Editar etiquetas"
+                        >
+                          🏷️
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

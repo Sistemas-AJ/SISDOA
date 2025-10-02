@@ -43,6 +43,7 @@ const PeriodoDetalle = ({ periodo }) => {
   // Estados para archivos
   const [subirArchivoModal, setSubirArchivoModal] = useState(false);
   const [carpetaParaArchivo, setCarpetaParaArchivo] = useState(null);
+  const [refreshArchivos, setRefreshArchivos] = useState(0); // Estado para forzar refresh de archivos
   
   // Estado para el modo de vista
   const [modoVista, setModoVista] = useState('iconos-grandes'); // Diferentes modos de vista
@@ -72,13 +73,40 @@ const PeriodoDetalle = ({ periodo }) => {
     showSuccess(`Carpeta "${carpeta.nombre}" creada exitosamente`);
     // Refrescar la lista de carpetas
     fetchCarpetas();
+    // Si se está creando una subcarpeta, actualizar la navegación
+    if (carpetaPadre && periodo) {
+      localStorage.setItem(`navegacion_periodo_${periodo.id}`, JSON.stringify({
+        carpetaActual: carpetaActual,
+        rutaCarpetas: rutaCarpetas
+      }));
+    }
   };
 
   // Cargar carpetas cuando cambie el período
   useEffect(() => {
     fetchCarpetas();
-    setCarpetaActual(null);
-    setRutaCarpetas([]);
+    
+    // Restaurar navegación guardada
+    if (periodo) {
+      const navegacionGuardada = localStorage.getItem(`navegacion_periodo_${periodo.id}`);
+      if (navegacionGuardada) {
+        try {
+          const { carpetaActual, rutaCarpetas } = JSON.parse(navegacionGuardada);
+          setCarpetaActual(carpetaActual);
+          setRutaCarpetas(rutaCarpetas || []);
+        } catch (error) {
+          console.error('Error al restaurar navegación:', error);
+          setCarpetaActual(null);
+          setRutaCarpetas([]);
+        }
+      } else {
+        setCarpetaActual(null);
+        setRutaCarpetas([]);
+      }
+    } else {
+      setCarpetaActual(null);
+      setRutaCarpetas([]);
+    }
   }, [periodo]);
 
   // Cerrar menú contextual al hacer clic fuera
@@ -100,32 +128,62 @@ const PeriodoDetalle = ({ periodo }) => {
 
   // Función para entrar a una carpeta
   const entrarEnCarpeta = (carpeta) => {
+    const nuevaRuta = [...rutaCarpetas, carpeta];
     setCarpetaActual(carpeta);
-    setRutaCarpetas([...rutaCarpetas, carpeta]);
+    setRutaCarpetas(nuevaRuta);
+    // Guardar la navegación en localStorage
+    if (periodo) {
+      localStorage.setItem(`navegacion_periodo_${periodo.id}`, JSON.stringify({
+        carpetaActual: carpeta,
+        rutaCarpetas: nuevaRuta
+      }));
+    }
   };
 
   // Función para volver a la carpeta padre
   const volverAtras = () => {
+    let nuevaRuta, nuevaCarpeta;
     if (rutaCarpetas.length > 1) {
-      const nuevaRuta = rutaCarpetas.slice(0, -1);
-      setRutaCarpetas(nuevaRuta);
-      setCarpetaActual(nuevaRuta[nuevaRuta.length - 1]);
+      nuevaRuta = rutaCarpetas.slice(0, -1);
+      nuevaCarpeta = nuevaRuta[nuevaRuta.length - 1];
     } else {
-      setCarpetaActual(null);
-      setRutaCarpetas([]);
+      nuevaRuta = [];
+      nuevaCarpeta = null;
+    }
+    
+    setRutaCarpetas(nuevaRuta);
+    setCarpetaActual(nuevaCarpeta);
+    
+    // Guardar la navegación en localStorage
+    if (periodo) {
+      localStorage.setItem(`navegacion_periodo_${periodo.id}`, JSON.stringify({
+        carpetaActual: nuevaCarpeta,
+        rutaCarpetas: nuevaRuta
+      }));
     }
   };
 
   // Función para ir a una carpeta específica en el breadcrumb
   const irACarpeta = (carpeta, index) => {
+    let nuevaRuta, nuevaCarpeta;
     if (index === -1) {
       // Ir a raíz
-      setCarpetaActual(null);
-      setRutaCarpetas([]);
+      nuevaRuta = [];
+      nuevaCarpeta = null;
     } else {
-      const nuevaRuta = rutaCarpetas.slice(0, index + 1);
-      setRutaCarpetas(nuevaRuta);
-      setCarpetaActual(carpeta);
+      nuevaRuta = rutaCarpetas.slice(0, index + 1);
+      nuevaCarpeta = carpeta;
+    }
+    
+    setRutaCarpetas(nuevaRuta);
+    setCarpetaActual(nuevaCarpeta);
+    
+    // Guardar la navegación en localStorage
+    if (periodo) {
+      localStorage.setItem(`navegacion_periodo_${periodo.id}`, JSON.stringify({
+        carpetaActual: nuevaCarpeta,
+        rutaCarpetas: nuevaRuta
+      }));
     }
   };
 
@@ -235,7 +293,8 @@ const PeriodoDetalle = ({ periodo }) => {
     showSuccess(`Archivo "${documento.nombre_archivo}" subido correctamente`);
     setSubirArchivoModal(false);
     setCarpetaParaArchivo(null);
-    // Aquí podrías refrescar la lista de archivos si es necesario
+    // Forzar refresh de la lista de archivos
+    setRefreshArchivos(prev => prev + 1);
   };
 
   // Función para renderizar el breadcrumb (ruta de navegación)
@@ -363,15 +422,19 @@ const PeriodoDetalle = ({ periodo }) => {
                       setModalOpen(true);
                     }}
                     className="periodo-detalle__btn--small periodo-detalle__btn--success"
+                    title="Crear nueva subcarpeta"
                   >
-                    + Subcarpeta
+                    <span>📁</span>
+                    Subcarpeta
                   </button>
                   
                   <button 
                     onClick={() => abrirModalSubirArchivo(carpetaActual)}
                     className="periodo-detalle__btn--small periodo-detalle__btn--warning"
+                    title="Subir archivo nuevo"
                   >
-                    📄 Archivo
+                    <span>📄</span>
+                    Archivo
                   </button>
                 </>
               )}
@@ -464,6 +527,7 @@ const PeriodoDetalle = ({ periodo }) => {
                         carpetaId={carpetaActual.id}
                         onUpload={handleArchivoSubido}
                         modoVista={modoVista}
+                        refresh={refreshArchivos}
                         esDeProyecto={false}
                       />
                     </div>
