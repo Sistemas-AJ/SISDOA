@@ -7,17 +7,17 @@ const AcordeonVista = ({ modoVista, onModoVistaChange }) => {
   const modos = [
     { 
       id: 'iconos-grandes', 
-      nombre: 'Iconos Extra Grandes', 
+      nombre: 'Iconos Grandes', 
       icono: '🔳'
     },
     { 
       id: 'iconos-medianos', 
-      nombre: 'Iconos Grandes', 
+      nombre: 'Iconos Medianos', 
       icono: '⬜'
     },
     { 
       id: 'iconos-pequenos', 
-      nombre: 'Iconos Medianos', 
+      nombre: 'Iconos Pequeños', 
       icono: '▫️'
     },
     { 

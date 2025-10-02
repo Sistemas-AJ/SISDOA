@@ -7,7 +7,7 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState({});
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [canPreview, setCanPreview] = useState(false);
+  const [canPreview, setCanPreview] = useState(true);
   const { showError } = useNotification();
 
   useEffect(() => {
@@ -27,10 +27,9 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
       const preview = checkPreviewCapability(documento.tipo_archivo);
       setCanPreview(preview.canPreview);
       
-      if (preview.canPreview) {
-        const url = `${BACKEND_URL}/documentos/download/${documento.id}`;
-        setPreviewUrl(url);
-      }
+      // Generar URL para previsualización (no fuerza descarga)
+      const url = `${BACKEND_URL}/documentos/preview/${documento.id}`;
+      setPreviewUrl(url);
     } catch (error) {
       showError('Error al cargar datos del archivo');
       console.error(error);
@@ -56,38 +55,59 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
   };
 
   const checkPreviewCapability = (mimeType) => {
-    if (!mimeType) return { canPreview: false, reason: 'Tipo de archivo desconocido' };
-    
-    // Tipos que se pueden previsualizar directamente
-    const previewableTypes = [
-      'image/',           // Todas las imágenes
-      'text/',           // Todos los archivos de texto
-      'application/pdf', // PDFs
-      'application/json', // JSON
-      'application/xml',  // XML
-      'application/javascript', // JavaScript
-      'application/x-javascript', // JavaScript alternativo
-      'text/html',       // HTML
-      'text/css',        // CSS
-      'text/javascript', // JavaScript como texto
-      'text/xml',        // XML como texto
-      'text/csv',        // CSV
-      'text/markdown',   // Markdown
-      'application/x-httpd-php', // PHP
-      'application/x-python-code', // Python
-      'text/x-python',   // Python como texto
-      'text/x-java-source', // Java
-      'text/x-c',        // C
-      'text/x-c++',      // C++
-      'application/x-sh', // Shell scripts
-      'text/x-shellscript' // Shell scripts como texto
-    ];
-    
-    const canPreview = previewableTypes.some(type => mimeType.startsWith(type) || mimeType.includes(type));
+    // Siempre permitir previsualización - mostraremos diferentes tipos de vista según el archivo
     return {
-      canPreview,
-      reason: canPreview ? null : 'Tipo de archivo no compatible para previsualización directa'
+      canPreview: true,
+      previewType: getPreviewType(mimeType),
+      reason: null
     };
+  };
+
+  const getPreviewType = (mimeType) => {
+    if (!mimeType) return 'info';
+    
+    // Tipos que se pueden previsualizar directamente en el navegador
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.includes('pdf')) return 'pdf';
+    if (mimeType.startsWith('text/') || 
+        mimeType.includes('json') || 
+        mimeType.includes('xml') || 
+        mimeType.includes('javascript') ||
+        mimeType.includes('css') ||
+        mimeType.includes('html') ||
+        mimeType.includes('csv') ||
+        mimeType.includes('markdown')) return 'text';
+    
+    // Para archivos de Office, mostrar información detallada
+    if (mimeType.includes('word') || 
+        mimeType.includes('excel') || 
+        mimeType.includes('powerpoint') ||
+        mimeType.includes('document') ||
+        mimeType.includes('spreadsheet') ||
+        mimeType.includes('presentation') ||
+        mimeType.includes('officedocument') ||
+        mimeType.includes('msword') ||
+        mimeType.includes('ms-excel') ||
+        mimeType.includes('ms-powerpoint') ||
+        mimeType === 'application/vnd.ms-excel' ||
+        mimeType === 'application/vnd.ms-powerpoint' ||
+        mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        mimeType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') return 'office';
+    
+    // Para archivos multimedia, mostrar información
+    if (mimeType.startsWith('video/') || mimeType.startsWith('audio/')) return 'media';
+    
+    // Para archivos comprimidos, mostrar información
+    if (mimeType.includes('zip') || 
+        mimeType.includes('rar') || 
+        mimeType.includes('7z') ||
+        mimeType.includes('tar') ||
+        mimeType.includes('gz') ||
+        mimeType.includes('compressed')) return 'archive';
+    
+    // Por defecto, mostrar información del archivo
+    return 'info';
   };
 
   const getCategoryFromMime = (mimeType) => {
@@ -222,62 +242,194 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
   };
 
   const renderPreview = () => {
-    if (!canPreview) {
-      return (
-        <div className="visualizador__no-preview">
-          <div className="visualizador__icon-large">
-            {metadata.icono}
+    const previewType = getPreviewType(metadata.tipoMime);
+
+    switch (previewType) {
+      case 'image':
+        return (
+          <div className="visualizador__preview-image">
+            <img 
+              src={previewUrl} 
+              alt={metadata.nombre}
+              onLoad={(e) => {
+                // Imagen cargada exitosamente
+                e.target.style.display = 'block';
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div style={{ display: 'none', textAlign: 'center', padding: '20px' }}>
+              <div className="visualizador__icon-large">{metadata.icono}</div>
+              <p>Error al cargar la imagen - Descarga el archivo para verlo</p>
+            </div>
           </div>
-          <p>Vista previa no disponible para este tipo de archivo</p>
-        </div>
-      );
-    }
+        );
 
-    if (metadata.tipoMime?.startsWith('image/')) {
-      return (
-        <div className="visualizador__preview-image">
-          <img 
-            src={previewUrl} 
-            alt={metadata.nombre}
-            onError={() => setCanPreview(false)}
-          />
-        </div>
-      );
-    }
+      case 'text':
+        return (
+          <div className="visualizador__preview-text">
+            <iframe 
+              src={previewUrl}
+              title={metadata.nombre}
+              sandbox="allow-same-origin"
+              onLoad={(e) => {
+                // Verificar si el iframe cargó correctamente
+                try {
+                  const iframeDoc = e.target.contentDocument || e.target.contentWindow.document;
+                  if (!iframeDoc || iframeDoc.body.children.length === 0) {
+                    throw new Error('Contenido vacío');
+                  }
+                } catch (error) {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div style={{ display: 'none', textAlign: 'center', padding: '20px' }}>
+              <div className="visualizador__icon-large">{metadata.icono}</div>
+              <p>Vista de texto no disponible - Descarga el archivo para verlo</p>
+            </div>
+          </div>
+        );
 
-    if (metadata.tipoMime?.startsWith('text/') || metadata.tipoMime?.includes('json')) {
-      return (
-        <div className="visualizador__preview-text">
-          <iframe 
-            src={previewUrl}
-            title={metadata.nombre}
-            onError={() => setCanPreview(false)}
-          />
-        </div>
-      );
-    }
+      case 'pdf':
+        return (
+          <div className="visualizador__preview-pdf">
+            <embed 
+              src={previewUrl}
+              type="application/pdf"
+              width="100%"
+              height="100%"
+            />
+          </div>
+        );
 
-    if (metadata.tipoMime?.includes('pdf')) {
-      return (
-        <div className="visualizador__preview-pdf">
-          <embed 
-            src={previewUrl}
-            type="application/pdf"
-            width="100%"
-            height="100%"
-          />
-        </div>
-      );
-    }
+      case 'office':
+        const getOfficeInfo = () => {
+          const ext = metadata.extension?.toLowerCase();
+          const mime = metadata.tipoMime?.toLowerCase();
+          
+          if (ext === 'docx' || ext === 'doc' || mime?.includes('word')) {
+            return {
+              type: 'Documento Word',
+              icon: '📝',
+              description: 'Documento de procesamiento de texto',
+              features: ['✍️ Texto con formato', '📄 Páginas y secciones', '🖼️ Imágenes y tablas', '📝 Comentarios y revisiones']
+            };
+          } else if (ext === 'xlsx' || ext === 'xls' || mime?.includes('excel')) {
+            return {
+              type: 'Hoja de Cálculo Excel',
+              icon: '📊',
+              description: 'Hoja de cálculo con datos y fórmulas',
+              features: ['🧮 Cálculos y fórmulas', '📈 Gráficos y tablas dinámicas', '📋 Múltiples hojas', '🔢 Análisis de datos']
+            };
+          } else if (ext === 'pptx' || ext === 'ppt' || mime?.includes('powerpoint')) {
+            return {
+              type: 'Presentación PowerPoint',
+              icon: '📈',
+              description: 'Presentación con diapositivas',
+              features: ['🎭 Diapositivas interactivas', '🎨 Animaciones y transiciones', '🖼️ Multimedia integrada', '📊 Gráficos y diagramas']
+            };
+          }
+          
+          return {
+            type: 'Documento Office',
+            icon: '📄',
+            description: 'Archivo de Microsoft Office',
+            features: ['📁 Compatible con Office Suite', '💾 Formato propietario', '🔧 Requiere software específico']
+          };
+        };
+        
+        const officeInfo = getOfficeInfo();
+        
+        return (
+          <div className="visualizador__preview-office">
+            <div className="visualizador__icon-large">{officeInfo.icon}</div>
+            <h3>{officeInfo.type}</h3>
+            <p><strong>Archivo:</strong> {metadata.nombre}</p>
+            <p><strong>Formato:</strong> {metadata.extension?.toUpperCase()}</p>
+            <p><strong>Tamaño:</strong> {metadata.tamaño}</p>
+            
+            <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h4>📋 Información del Archivo</h4>
+              <p style={{ marginBottom: '12px', fontStyle: 'italic' }}>{officeInfo.description}</p>
+              
+              <h5 style={{ margin: '12px 0 8px 0', fontSize: '14px' }}>🔧 Características:</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {officeInfo.features.map((feature, index) => (
+                  <span key={index} style={{ fontSize: '13px' }}>{feature}</span>
+                ))}
+              </div>
+            </div>
+            
+            <div style={{ marginTop: '16px', padding: '12px', background: '#e3f2fd', borderRadius: '6px', borderLeft: '4px solid #2196f3' }}>
+              <h5 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#1976d2' }}>💡 Cómo abrir este archivo:</h5>
+              <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+                <p style={{ margin: '4px 0' }}>• <strong>Microsoft Office:</strong> {officeInfo.type.includes('Word') ? 'Word' : officeInfo.type.includes('Excel') ? 'Excel' : 'PowerPoint'}</p>
+                <p style={{ margin: '4px 0' }}>• <strong>Alternativas gratuitas:</strong> LibreOffice, Google Docs/Sheets/Slides</p>
+                <p style={{ margin: '4px 0' }}>• <strong>Online:</strong> Office 365, Google Workspace</p>
+              </div>
+            </div>
+          </div>
+        );
 
-    return (
-      <div className="visualizador__no-preview">
-        <div className="visualizador__icon-large">
-          {metadata.icono}
-        </div>
-        <p>Vista previa no compatible</p>
-      </div>
-    );
+      case 'media':
+        return (
+          <div className="visualizador__preview-media">
+            <div className="visualizador__icon-large">{metadata.icono}</div>
+            <h3>Archivo Multimedia</h3>
+            <p><strong>Archivo:</strong> {metadata.nombre}</p>
+            <p><strong>Tipo:</strong> {metadata.categoria}</p>
+            <p><strong>Tamaño:</strong> {metadata.tamaño}</p>
+            <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h4>Información del Medio</h4>
+              <p>🎵 Este es un archivo multimedia ({metadata.extension})</p>
+              <p>💡 Para reproducir, descarga el archivo</p>
+              <p>📱 Compatible con reproductores multimedia estándar</p>
+            </div>
+          </div>
+        );
+
+      case 'archive':
+        return (
+          <div className="visualizador__preview-archive">
+            <div className="visualizador__icon-large">{metadata.icono}</div>
+            <h3>Archivo Comprimido</h3>
+            <p><strong>Archivo:</strong> {metadata.nombre}</p>
+            <p><strong>Tipo:</strong> {metadata.categoria}</p>
+            <p><strong>Tamaño:</strong> {metadata.tamaño}</p>
+            <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h4>Información del Archivo</h4>
+              <p>📦 Este es un archivo comprimido ({metadata.extension})</p>
+              <p>💡 Descarga y extrae para acceder al contenido</p>
+              <p>🛠️ Compatible con WinRAR, 7-Zip, y otros extractores</p>
+            </div>
+          </div>
+        );
+
+      default: // 'info'
+        return (
+          <div className="visualizador__preview-info">
+            <div className="visualizador__icon-large">{metadata.icono}</div>
+            <h3>Vista de Información</h3>
+            <p><strong>Archivo:</strong> {metadata.nombre}</p>
+            <p><strong>Tipo:</strong> {metadata.categoria}</p>
+            <p><strong>Tamaño:</strong> {metadata.tamaño}</p>
+            <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h4>Información del Archivo</h4>
+              <p>📄 Archivo de tipo {metadata.extension}</p>
+              <p>💡 Descarga el archivo para abrirlo con la aplicación apropiada</p>
+              <p>🖥️ El sistema detectó este tipo de archivo automáticamente</p>
+            </div>
+          </div>
+        );
+    }
   };
 
   if (!isOpen || !documento) return null;

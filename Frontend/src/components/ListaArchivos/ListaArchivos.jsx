@@ -8,6 +8,7 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
   const [loading, setLoading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showVisualizador, setShowVisualizador] = useState(false);
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, documento: null });
   const { showSuccess, showError } = useNotification();
 
   const fetchDocumentos = async () => {
@@ -92,6 +93,50 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
     setShowVisualizador(false);
     setSelectedDocument(null);
   };
+
+  const handleContextMenu = (e, documento) => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      documento
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, documento: null });
+  };
+
+  const handleContextMenuAction = (action) => {
+    if (contextMenu.documento) {
+      switch (action) {
+        case 'download':
+          handleDownload(contextMenu.documento);
+          break;
+        case 'delete':
+          handleDelete(contextMenu.documento);
+          break;
+        default:
+          break;
+      }
+    }
+    handleCloseContextMenu();
+  };
+
+  // Cerrar menú de contexto al hacer click en cualquier lugar
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (contextMenu.visible) {
+        handleCloseContextMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.visible]);
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -188,6 +233,7 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
             key={documento.id}
             style={{...cardStyle, cursor: 'pointer'}}
             onClick={() => handlePreview(documento)}
+            onContextMenu={(e) => handleContextMenu(e, documento)}
             onMouseEnter={(e) => {
               Object.assign(e.currentTarget.style, hoverStyle);
             }}
@@ -228,47 +274,13 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
             <div style={{
               fontSize: '11px',
               color: '#999',
-              fontStyle: 'italic',
-              marginBottom: '12px'
+              fontStyle: 'italic'
             }}>
               {new Date(documento.fecha_creacion).toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
               })}
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDownload(documento); }}
-                style={{
-                  padding: '6px 10px',
-                  background: '#2196f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '10px'
-                }}
-                title="Descargar"
-              >
-                ⬇️
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(documento); }}
-                style={{
-                  padding: '6px 10px',
-                  background: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '10px'
-                }}
-                title="Eliminar"
-              >
-                🗑️
-              </button>
             </div>
           </div>
         ))}
@@ -309,6 +321,7 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
             key={documento.id}
             style={cardStyle}
             onClick={() => handlePreview(documento)}
+            onContextMenu={(e) => handleContextMenu(e, documento)}
             onMouseEnter={(e) => {
               Object.assign(e.currentTarget.style, hoverStyle);
             }}
@@ -345,43 +358,9 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
             
             <div style={{ 
               fontSize: '11px', 
-              color: '#666',
-              marginBottom: '8px'
+              color: '#666'
             }}>
               {formatFileSize(documento.tamaño_bytes)}
-            </div>
-
-            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDownload(documento); }}
-                style={{
-                  padding: '4px 6px',
-                  background: '#2196f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                  fontSize: '9px'
-                }}
-                title="Descargar"
-              >
-                ⬇️
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(documento); }}
-                style={{
-                  padding: '4px 6px',
-                  background: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                  fontSize: '9px'
-                }}
-                title="Eliminar"
-              >
-                🗑️
-              </button>
             </div>
           </div>
         ))}
@@ -422,6 +401,7 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
             key={documento.id}
             style={{...cardStyle, cursor: 'pointer'}}
             onClick={() => handlePreview(documento)}
+            onContextMenu={(e) => handleContextMenu(e, documento)}
             onMouseEnter={(e) => {
               Object.assign(e.currentTarget.style, hoverStyle);
             }}
@@ -446,54 +426,10 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
               fontSize: '11px',
               wordBreak: 'break-word',
               lineHeight: '1.2',
-              height: '22px',
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical'
+              textAlign: 'center',
+              padding: '0 4px'
             }}>
               {documento.nombre_archivo}
-            </div>
-
-            <div style={{
-              position: 'absolute',
-              bottom: '4px',
-              left: '4px',
-              right: '4px',
-              display: 'flex',
-              gap: '2px',
-              justifyContent: 'center'
-            }}>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDownload(documento); }}
-                style={{
-                  padding: '2px 4px',
-                  background: '#2196f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '2px',
-                  cursor: 'pointer',
-                  fontSize: '8px'
-                }}
-                title="Descargar"
-              >
-                ⬇️
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDelete(documento); }}
-                style={{
-                  padding: '2px 4px',
-                  background: '#f44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '2px',
-                  cursor: 'pointer',
-                  fontSize: '8px'
-                }}
-                title="Eliminar"
-              >
-                🗑️
-              </button>
             </div>
           </div>
         ))}
@@ -1144,6 +1080,57 @@ const ListaArchivos = ({ carpetaId, onUpload, modoVista = 'iconos-grandes' }) =>
         isOpen={showVisualizador}
         onClose={handleCloseVisualizador}
       />
+
+      {/* Menú de contexto */}
+      {contextMenu.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            top: contextMenu.y,
+            left: contextMenu.x,
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '6px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            zIndex: 10000,
+            minWidth: '150px',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderBottom: '1px solid #f0f0f0'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+            onClick={() => handleContextMenuAction('download')}
+          >
+            ⬇️ Descargar
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#dc3545'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+            onClick={() => handleContextMenuAction('delete')}
+          >
+            🗑️ Eliminar
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -81,6 +81,21 @@ async def descargar_documento(documento_id: int, db: Session = Depends(get_db)):
         media_type=documento.tipo_archivo
     )
 
+@router.get("/preview/{documento_id}")
+async def previsualizar_documento(documento_id: int, db: Session = Depends(get_db)):
+    documento = get_documento(db, documento_id)
+    if not documento:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    
+    if not os.path.exists(documento.ruta_fisica):
+        raise HTTPException(status_code=404, detail="Archivo físico no encontrado")
+    
+    # Retornar el archivo sin forzar descarga (sin filename)
+    return FileResponse(
+        path=documento.ruta_fisica,
+        media_type=documento.tipo_archivo
+    )
+
 @router.put("/{documento_id}", response_model=DocumentoOut)
 def actualizar_documento(
     documento_id: int,
