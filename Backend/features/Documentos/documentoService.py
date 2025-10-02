@@ -3,6 +3,7 @@ from models.documentsModel import Documento
 from .documentoSchema import DocumentoCreate, DocumentoUpdate
 from datetime import datetime
 import os
+import re
 
 def get_documentos(db: Session):
     return db.query(Documento).all()
@@ -56,3 +57,42 @@ def delete_documento(db: Session, documento_id: int):
     db.delete(db_documento)
     db.commit()
     return db_documento
+
+def extraer_etiquetas_del_comentario(comentario: str):
+    """Extrae las etiquetas del formato [Etiquetas: tag1, tag2, tag3] del comentario"""
+    if not comentario:
+        return [], comentario
+    
+    # Buscar el patrón de etiquetas
+    match = re.search(r'\[Etiquetas:\s*([^\]]+)\]', comentario)
+    if match:
+        etiquetas_str = match.group(1).strip()
+        etiquetas = [tag.strip() for tag in etiquetas_str.split(',') if tag.strip()]
+        # Remover la sección de etiquetas del comentario
+        comentario_limpio = re.sub(r'\n?\[Etiquetas:[^\]]+\]', '', comentario).strip()
+        return etiquetas, comentario_limpio
+    
+    return [], comentario
+
+def procesar_documento_con_etiquetas(documento):
+    """Procesa un documento para extraer etiquetas y devolver el objeto con etiquetas separadas"""
+    if not documento:
+        return None
+    
+    etiquetas, comentario_limpio = extraer_etiquetas_del_comentario(documento.comentario)
+    
+    # Crear un diccionario con los datos del documento
+    documento_dict = {
+        'id': documento.id,
+        'nombre_archivo': documento.nombre_archivo,
+        'ruta_fisica': documento.ruta_fisica,
+        'tipo_archivo': documento.tipo_archivo,
+        'tamaño_bytes': documento.tamaño_bytes,
+        'id_carpeta': documento.id_carpeta,
+        'fecha_creacion': documento.fecha_creacion,
+        'fecha_modificacion': documento.fecha_modificacion,
+        'comentario': comentario_limpio,
+        'etiquetas': etiquetas
+    }
+    
+    return documento_dict

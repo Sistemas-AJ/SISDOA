@@ -11,7 +11,14 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
   const [canPreview, setCanPreview] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [previewError, setPreviewError] = useState(false);
-  const { showError } = useNotification();
+  
+  // Estados para edición
+  const [editandoComentario, setEditandoComentario] = useState(false);
+  const [comentarioEditado, setComentarioEditado] = useState('');
+  const [editandoEtiquetas, setEditandoEtiquetas] = useState(false);
+  const [etiquetasEditadas, setEtiquetasEditadas] = useState('');
+  
+  const { showError, showSuccess } = useNotification();
 
   useEffect(() => {
     if (isOpen && documento) {
@@ -49,9 +56,18 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
     setPreviewError(false); // Resetear error de vista previa
     
     try {
-      // Generar metadatos del archivo
-      const fileMetadata = generateMetadata(documento);
-      setMetadata(fileMetadata);
+      // Obtener datos actualizados del documento desde el backend
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}`);
+      if (response.ok) {
+        const documentoActualizado = await response.json();
+        // Generar metadatos del archivo con datos actualizados
+        const fileMetadata = generateMetadata(documentoActualizado);
+        setMetadata(fileMetadata);
+      } else {
+        // Si falla la carga desde el backend, usar datos locales
+        const fileMetadata = generateMetadata(documento);
+        setMetadata(fileMetadata);
+      }
 
       // Verificar si se puede previsualizar
       const preview = checkPreviewCapability(documento.tipo_archivo, documento.nombre_archivo);
@@ -140,7 +156,8 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
       carpetaId: doc.id_carpeta,
       categoria: getCategoryFromFileName(doc.nombre_archivo, doc.tipo_archivo),
       icono: getIconFromFileName(doc.nombre_archivo, doc.tipo_archivo),
-      comentario: doc.comentario || ""
+      comentario: doc.comentario || "",
+      etiquetas: doc.etiquetas || []
     };
   };
 
@@ -341,6 +358,88 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
       }
     } catch (error) {
       showError('Error al descargar archivo: ' + error.message);
+    }
+  };
+
+  // Funciones para edición de comentarios
+  const iniciarEdicionComentario = () => {
+    setComentarioEditado(metadata.comentario || '');
+    setEditandoComentario(true);
+  };
+
+  const cancelarEdicionComentario = () => {
+    setEditandoComentario(false);
+    setComentarioEditado('');
+  };
+
+  const guardarComentario = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}/comentario`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comentario: comentarioEditado }),
+      });
+
+      if (response.ok) {
+        setMetadata(prev => ({ ...prev, comentario: comentarioEditado }));
+        setEditandoComentario(false);
+        showSuccess('Comentario actualizado correctamente');
+      } else {
+        throw new Error('Error al guardar comentario');
+      }
+    } catch (error) {
+      showError('Error al guardar comentario: ' + error.message);
+    }
+  };
+
+  // Funciones para edición de etiquetas
+  const iniciarEdicionEtiquetas = () => {
+    // Convertir array de etiquetas a string separado por comas
+    const etiquetasActuales = metadata.etiquetas || [];
+    const etiquetasString = etiquetasActuales.map(etq => etq.nombre || etq).join(', ');
+    setEtiquetasEditadas(etiquetasString);
+    setEditandoEtiquetas(true);
+  };
+
+  const cancelarEdicionEtiquetas = () => {
+    setEditandoEtiquetas(false);
+    setEtiquetasEditadas('');
+  };
+
+  const guardarEtiquetas = async () => {
+    try {
+      // Convertir string a array y limpiar espacios
+      const nuevasEtiquetas = etiquetasEditadas
+        .split(',')
+        .map(etq => etq.trim())
+        .filter(etq => etq.length > 0);
+
+      const response = await fetch(`${BACKEND_URL}/documentos/${documento.id}/etiquetas`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ etiquetas: nuevasEtiquetas }),
+      });
+
+      if (response.ok) {
+        setEditandoEtiquetas(false);
+        showSuccess('Etiquetas actualizadas correctamente');
+        
+        // Actualizar las etiquetas en el metadata
+        setMetadata(prev => ({ ...prev, etiquetas: nuevasEtiquetas }));
+        
+        // Llamar callback si existe
+        if (onEtiquetasChange) {
+          onEtiquetasChange(nuevasEtiquetas);
+        }
+      } else {
+        throw new Error('Error al guardar etiquetas');
+      }
+    } catch (error) {
+      showError('Error al guardar etiquetas: ' + error.message);
     }
   };
 
@@ -557,12 +656,102 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false
                     <label>Tipo MIME:</label>
                     <span className="visualizador__mime">{metadata.tipoMime}</span>
                   </div>
-                  {metadata.comentario && (
-                    <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
-                      <label>Comentario:</label>
-                      <span style={{ background: '#f3f6fa', borderRadius: 6, padding: '6px 10px', display: 'block', color: '#333' }}>{metadata.comentario}</span>
-                    </div>
-                  )}
+                  <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
+                    <label>Comentario:</label>
+                    {editandoComentario ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <textarea
+                          value={comentarioEditado}
+                          onChange={(e) => setComentarioEditado(e.target.value)}
+                          placeholder="Agregar comentario al archivo..."
+                          className="visualizador__edit-field"
+                          style={{ minHeight: '60px', resize: 'vertical' }}
+                          rows="3"
+                        />
+                        <div className="visualizador__edit-buttons">
+                          <button
+                            onClick={cancelarEdicionComentario}
+                            className="visualizador__edit-btn visualizador__edit-btn--cancel"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={guardarComentario}
+                            className="visualizador__edit-btn visualizador__edit-btn--save"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="visualizador__inline-edit">
+                        <span style={{ flex: 1 }}>
+                          {metadata.comentario || 'Sin comentario'}
+                        </span>
+                        <button
+                          onClick={iniciarEdicionComentario}
+                          className="visualizador__edit-icon"
+                          title="Editar comentario"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Sección de Etiquetas */}
+                  <div className="visualizador__metadata-item" style={{ gridColumn: '1 / -1' }}>
+                    <label>Etiquetas:</label>
+                    {editandoEtiquetas ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={etiquetasEditadas}
+                          onChange={(e) => setEtiquetasEditadas(e.target.value)}
+                          placeholder="Etiquetas separadas por comas (ej: importante, documento, revisión)"
+                          className="visualizador__edit-field"
+                        />
+                        <div className="visualizador__edit-buttons">
+                          <button
+                            onClick={cancelarEdicionEtiquetas}
+                            className="visualizador__edit-btn visualizador__edit-btn--cancel"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={guardarEtiquetas}
+                            className="visualizador__edit-btn visualizador__edit-btn--save"
+                          >
+                            Guardar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="visualizador__inline-edit">
+                        <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {metadata.etiquetas && metadata.etiquetas.length > 0 ? (
+                            metadata.etiquetas.map((etiqueta, index) => (
+                              <span
+                                key={index}
+                                className="visualizador__etiqueta"
+                              >
+                                {etiqueta.nombre || etiqueta}
+                              </span>
+                            ))
+                          ) : (
+                            <span style={{ color: '#999', fontSize: '13px' }}>Sin etiquetas</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={iniciarEdicionEtiquetas}
+                          className="visualizador__edit-icon"
+                          title="Editar etiquetas"
+                        >
+                          🏷️
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

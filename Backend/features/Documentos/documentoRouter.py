@@ -4,11 +4,13 @@ from sqlalchemy.orm import Session
 from db.db import get_db
 from .documentoService import (
     get_documentos, get_documentos_por_carpeta, get_documento, 
-    create_documento, update_documento, delete_documento
+    create_documento, update_documento, delete_documento,
+    procesar_documento_con_etiquetas
 )
 from .documentoSchema import DocumentoCreate, DocumentoUpdate, DocumentoOut
 import os
 import uuid
+import re
 from datetime import datetime
 
 router = APIRouter(prefix="/documentos", tags=["Documentos"])
@@ -19,18 +21,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("/", response_model=list[DocumentoOut])
 def listar_documentos(db: Session = Depends(get_db)):
-    return get_documentos(db)
+    documentos = get_documentos(db)
+    return [procesar_documento_con_etiquetas(doc) for doc in documentos]
 
 @router.get("/carpeta/{carpeta_id}", response_model=list[DocumentoOut])
 def listar_documentos_por_carpeta(carpeta_id: int, db: Session = Depends(get_db)):
-    return get_documentos_por_carpeta(db, carpeta_id)
+    documentos = get_documentos_por_carpeta(db, carpeta_id)
+    return [procesar_documento_con_etiquetas(doc) for doc in documentos]
 
 @router.get("/{documento_id}", response_model=DocumentoOut)
 def obtener_documento(documento_id: int, db: Session = Depends(get_db)):
     documento = get_documento(db, documento_id)
     if not documento:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    return documento
+    return procesar_documento_con_etiquetas(documento)
 
 from fastapi import Form
 
@@ -61,7 +65,8 @@ async def subir_documento(
             id_carpeta=carpeta_id,
             comentario=comentario
         )
-        return create_documento(db, documento_data)
+        documento_creado = create_documento(db, documento_data)
+        return procesar_documento_con_etiquetas(documento_creado)
         
     except Exception as e:
         # Si hay error, limpiar archivo creado
@@ -108,7 +113,7 @@ def actualizar_documento(
     documento_db = update_documento(db, documento_id, documento)
     if not documento_db:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
-    return documento_db
+    return procesar_documento_con_etiquetas(documento_db)
 
 @router.delete("/{documento_id}", response_model=DocumentoOut)
 def eliminar_documento(documento_id: int, db: Session = Depends(get_db)):
@@ -116,3 +121,48 @@ def eliminar_documento(documento_id: int, db: Session = Depends(get_db)):
     if not documento_db:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
     return documento_db
+
+@router.put("/{documento_id}/comentario", response_model=DocumentoOut)
+def actualizar_comentario_documento(
+    documento_id: int,
+    comentario_data: dict,
+    db: Session = Depends(get_db)
+):
+    """Actualizar solo el comentario de un documento"""
+    documento_update = DocumentoUpdate(comentario=comentario_data.get("comentario"))
+    documento_db = update_documento(db, documento_id, documento_update)
+    if not documento_db:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    return procesar_documento_con_etiquetas(documento_db)
+
+@router.put("/{documento_id}/etiquetas", response_model=DocumentoOut)
+def actualizar_etiquetas_documento(
+    documento_id: int,
+    etiquetas_data: dict,
+    db: Session = Depends(get_db)
+):
+    """Actualizar etiquetas de un documento (por ahora se almacenan como comentario adicional)"""
+    documento = get_documento(db, documento_id)
+    if not documento:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    
+    # Por ahora, almacenaremos las etiquetas como parte del comentario
+    # En el futuro se puede crear una tabla separada para etiquetas
+    etiquetas = etiquetas_data.get("etiquetas", [])
+    etiquetas_str = ", ".join(etiquetas) if etiquetas else ""
+    
+    # Mantener el comentario existente y agregar etiquetas
+    comentario_actual = documento.comentario or ""
+    if etiquetas_str:
+        if comentario_actual:
+            nuevo_comentario = f"{comentario_actual}\n[Etiquetas: {etiquetas_str}]"
+        else:
+            nuevo_comentario = f"[Etiquetas: {etiquetas_str}]"
+    else:
+        # Si no hay etiquetas, mantener solo el comentario original sin etiquetas
+        import re
+        nuevo_comentario = re.sub(r'\n?\[Etiquetas:.*?\]', '', comentario_actual)
+    
+    documento_update = DocumentoUpdate(comentario=nuevo_comentario)
+    documento_db = update_documento(db, documento_id, documento_update)
+    return procesar_documento_con_etiquetas(documento_db)

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class DocumentoBase(BaseModel):
     nombre_archivo: str
@@ -25,5 +25,7 @@ class DocumentoOut(DocumentoBase):
     fecha_creacion: str
     fecha_modificacion: Optional[str] = None
     comentario: Optional[str] = None
+    etiquetas: Optional[List[str]] = None
+    
     class Config:
         from_attributes = True

@@ -244,8 +244,22 @@ const ProyectoDetalle = ({ proyecto, onVolver }) => {
             <div className="proyecto-detalle__toolbar-controls">
               {carpetaActual && (
                 <>
-                  <button onClick={() => { setCarpetaPadre(carpetaActual); setModalOpen(true); }} className="proyecto-detalle__btn--small proyecto-detalle__btn--success">+ Subcarpeta</button>
-                  <button onClick={() => abrirModalSubirArchivo(carpetaActual)} className="proyecto-detalle__btn--small proyecto-detalle__btn--warning">📄 Archivo</button>
+                  <button 
+                    onClick={() => { setCarpetaPadre(carpetaActual); setModalOpen(true); }} 
+                    className="proyecto-detalle__btn--small proyecto-detalle__btn--success"
+                    title="Crear nueva subcarpeta"
+                  >
+                    <span>📁</span>
+                    Subcarpeta
+                  </button>
+                  <button 
+                    onClick={() => abrirModalSubirArchivo(carpetaActual)} 
+                    className="proyecto-detalle__btn--small proyecto-detalle__btn--warning"
+                    title="Subir archivo nuevo"
+                  >
+                    <span>📄</span>
+                    Archivo
+                  </button>
                 </>
               )}
               <AcordeonVista modoVista={modoVista} onModoVistaChange={setModoVista} />

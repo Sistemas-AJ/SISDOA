@@ -422,15 +422,19 @@ const PeriodoDetalle = ({ periodo }) => {
                       setModalOpen(true);
                     }}
                     className="periodo-detalle__btn--small periodo-detalle__btn--success"
+                    title="Crear nueva subcarpeta"
                   >
-                    + Subcarpeta
+                    <span>📁</span>
+                    Subcarpeta
                   </button>
                   
                   <button 
                     onClick={() => abrirModalSubirArchivo(carpetaActual)}
                     className="periodo-detalle__btn--small periodo-detalle__btn--warning"
+                    title="Subir archivo nuevo"
                   >
-                    📄 Archivo
+                    <span>📄</span>
+                    Archivo
                   </button>
                 </>
               )}
