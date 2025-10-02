@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaCalendarAlt } from "react-icons/fa";
 import "./PeriodoDetalle.css";
 import CrearCarpetaModal from "../proyectos/CrearCarpetaModal";
 import BACKEND_URL from "../../service/backend";
@@ -393,8 +394,32 @@ const PeriodoDetalle = ({ periodo }) => {
               
               if (carpetasAMostrar.length === 0 && !carpetaActual) {
                 return (
-                  <div className="periodo-detalle__empty-message">
-                    No hay carpetas en este período aún. Haz clic en 'Crear Carpeta Principal' para comenzar.
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '45vh',
+                    color: '#4a5a6a',
+                    background: 'linear-gradient(135deg, #f8fafc 60%, #e3eaf5 100%)',
+                    borderRadius: '18px',
+                    boxShadow: '0 4px 24px 0 rgba(80,100,120,0.07)',
+                    margin: '32px',
+                    fontSize: '1.2rem',
+                    transition: 'box-shadow 0.3s',
+                  }}>
+                    <FaCalendarAlt size={60} color="#7da0fa" style={{ marginBottom: 24, opacity: 0.7 }} />
+                    <div style={{ fontWeight: 700, fontSize: '1.5rem', marginBottom: 8 }}>
+                      ¡Aún no hay carpetas!
+                    </div>
+                    <div style={{ color: '#6c7a89', fontSize: '1.1rem', marginBottom: 12, textAlign: 'center' }}>
+                      Selecciona un período de la izquierda<br />
+                      o crea una carpeta principal para comenzar a organizar tus archivos.
+                    </div>
+                    <div style={{ fontSize: '0.95rem', color: '#b0b8c1', textAlign: 'center' }}>
+                      Aquí verás las carpetas y archivos del período seleccionado.<br />
+                      ¡Gestiona y visualiza tus documentos fácilmente!
+                    </div>
                   </div>
                 );
               }
@@ -439,6 +464,7 @@ const PeriodoDetalle = ({ periodo }) => {
                         carpetaId={carpetaActual.id}
                         onUpload={handleArchivoSubido}
                         modoVista={modoVista}
+                        esDeProyecto={false}
                       />
                     </div>
                   )}

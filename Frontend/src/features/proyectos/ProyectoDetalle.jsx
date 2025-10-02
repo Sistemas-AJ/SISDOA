@@ -277,7 +277,13 @@ const ProyectoDetalle = ({ proyecto, onVolver }) => {
                   {renderizarCarpetas()}
                   {carpetaActual && (
                     <div className="proyecto-detalle__section-divider">
-                      <ListaArchivos carpetaId={carpetaActual.id} onUpload={handleArchivoSubido} modoVista={modoVista} refresh={refreshArchivos} />
+                      <ListaArchivos 
+                        carpetaId={carpetaActual.id} 
+                        onUpload={handleArchivoSubido} 
+                        modoVista={modoVista} 
+                        refresh={refreshArchivos}
+                        esDeProyecto={true}
+                      />
                     </div>
                   )}
                   {carpetaActual && carpetasAMostrar.length === 0 && (

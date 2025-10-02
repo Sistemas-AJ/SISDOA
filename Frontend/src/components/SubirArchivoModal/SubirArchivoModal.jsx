@@ -5,6 +5,7 @@ import BACKEND_URL from '../../service/backend';
 const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [comentario, setComentario] = useState("");
+  const [etiqueta, setEtiqueta] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const { showSuccess, showError } = useNotification();
@@ -13,7 +14,8 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
-    setComentario(""); // Limpiar comentario al seleccionar nuevo archivo
+  setComentario(""); // Limpiar comentario al seleccionar nuevo archivo
+  setEtiqueta(""); // Limpiar etiqueta al seleccionar nuevo archivo
   };
 
   const handleDrop = (e) => {
@@ -40,9 +42,11 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
-    if (comentario) formData.append('comentario', comentario);
+  if (comentario) formData.append('comentario', comentario);
+  if (etiqueta) formData.append('etiqueta', etiqueta);
 
     try {
+      // Subir archivo
       const response = await fetch(`${BACKEND_URL}/documentos/upload/${carpetaId}`, {
         method: 'POST',
         body: formData,
@@ -50,11 +54,33 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
 
       if (response.ok) {
         const documento = await response.json();
+        // Extraer metadatos generales
+        const metadatos = [
+          { clave: 'nombre_archivo', valor: selectedFile.name },
+          { clave: 'extension', valor: selectedFile.name.split('.').pop() },
+          { clave: 'tamano', valor: selectedFile.size.toString() },
+          { clave: 'fecha_creacion', valor: new Date(selectedFile.lastModified).toISOString() },
+          { clave: 'fecha_modificacion', valor: new Date(selectedFile.lastModified).toISOString() },
+          { clave: 'usuario', valor: (localStorage.getItem('usuario') || 'desconocido') },
+          { clave: 'ruta', valor: documento.ruta || '' },
+          { clave: 'estado', valor: 'activo' }
+        ];
+        // Si hay etiqueta, agregarla como metadato
+        if (etiqueta) {
+          metadatos.push({ clave: 'etiqueta', valor: etiqueta });
+        }
+        // Enviar metadatos al backend
+        await fetch(`${BACKEND_URL}/metadatos/documento/${documento.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ metadatos })
+        });
         showSuccess(`Archivo "${selectedFile.name}" subido exitosamente`);
         onUploaded && onUploaded(documento);
         onClose();
         setSelectedFile(null);
         setComentario("");
+        setEtiqueta("");
       } else {
         throw new Error('Error al subir archivo');
       }
@@ -187,6 +213,38 @@ const SubirArchivoModal = ({ isOpen, onClose, carpetaId, onUploaded }) => {
                 </button>
               </div>
             </div>
+            {/* Campo de etiqueta opcional */}
+            <div style={{ marginBottom: '18px', paddingLeft: 4, paddingRight: 4 }}>
+              <label style={{ fontWeight: 600, color: '#1976d2', display: 'block', marginBottom: 6, fontSize: 16, letterSpacing: 0.2 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <svg width="20" height="20" fill="#1976d2" style={{ marginRight: 2 }} viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5H8C7.33 5 6.73 5.33 6.37 5.84L3.11 10.53C2.39 11.54 3.13 13 4.39 13H19.61C20.87 13 21.61 11.54 20.89 10.53L17.63 5.84ZM12 17C13.1 17 14 16.1 14 15H10C10 16.1 10.9 17 12 17Z"/></svg>
+                  Etiqueta <span style={{ color: '#888', fontWeight: 400, fontSize: 14 }}>(opcional)</span>:
+                </span>
+                <input
+                  type="text"
+                  value={etiqueta}
+                  onChange={e => setEtiqueta(e.target.value)}
+                  placeholder="Agrega una etiqueta para el archivo..."
+                  style={{
+                    width: '100%',
+                    borderRadius: 8,
+                    border: '1.5px solid #b6c6e3',
+                    padding: '10px 1px',
+                    fontSize: 15.5,
+                    marginTop: 7,
+                    marginBottom: 2,
+                    background: '#f7faff',
+                    color: '#222',
+                    boxShadow: '0 1px 4px rgba(25, 118, 210, 0.07)',
+                    outline: 'none',
+                    transition: 'border 0.2s',
+                  }}
+                  onFocus={e => e.target.style.border = '1.5px solid #1976d2'}
+                  onBlur={e => e.target.style.border = '1.5px solid #b6c6e3'}
+                />
+              </label>
+            </div>
+
             {/* Campo de comentario opcional con mejor diseño */}
             <div style={{ marginBottom: '22px', paddingLeft: 4, paddingRight: 4 }}>
               <label style={{ fontWeight: 600, color: '#1976d2', display: 'block', marginBottom: 6, fontSize: 16, letterSpacing: 0.2 }}>

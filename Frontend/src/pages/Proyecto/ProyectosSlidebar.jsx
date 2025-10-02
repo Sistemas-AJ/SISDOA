@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaFolderOpen } from "react-icons/fa";
 import Slidebar from "../../components/Slidebar/Slidebar";
 import { FaProjectDiagram } from "react-icons/fa";
 import BACKEND_URL from "../../service/backend";
@@ -108,8 +109,32 @@ const ProyectosSlidebar = ({ onProyectoClick }) => {
             onVolver={() => setSelectedProyecto(null)}
           />
         ) : (
-          <div style={{ color: '#888', fontStyle: 'italic', margin: '32px', fontSize: '1.2rem' }}>
-            Selecciona un proyecto para ver detalles
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '60vh',
+            color: '#4a5a6a',
+            background: 'linear-gradient(135deg, #f8fafc 60%, #e3eaf5 100%)',
+            borderRadius: '18px',
+            boxShadow: '0 4px 24px 0 rgba(80,100,120,0.07)',
+            margin: '32px',
+            fontSize: '1.2rem',
+            transition: 'box-shadow 0.3s',
+          }}>
+            <FaFolderOpen size={64} color="#7da0fa" style={{ marginBottom: 24, opacity: 0.7 }} />
+            <div style={{ fontWeight: 700, fontSize: '1.5rem', marginBottom: 8 }}>
+              ¡Nada por aquí todavía!
+            </div>
+            <div style={{ color: '#6c7a89', fontSize: '1.1rem', marginBottom: 12 }}>
+              Selecciona un proyecto de la izquierda<br />
+              o crea uno nuevo para comenzar a trabajar.
+            </div>
+            <div style={{ fontSize: '0.95rem', color: '#b0b8c1' }}>
+              Los detalles del proyecto aparecerán aquí.<br />
+              ¡Organiza, visualiza y gestiona tus proyectos fácilmente!
+            </div>
           </div>
         )}
       </div>

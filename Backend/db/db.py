@@ -94,6 +94,7 @@ def crear_base_de_datos(db_file):
                 id_carpeta INTEGER NOT NULL,
                 fecha_creacion TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 fecha_modificacion TEXT,
+                comentario TEXT,
                 FOREIGN KEY (id_carpeta) REFERENCES Carpetas(id) ON DELETE CASCADE
             );
 

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Slidebar from "../../components/Slidebar/Slidebar";
-import { FaCalendarAlt } from "react-icons/fa";
+import calendarioSidebarImg from '../../assets/calendarios.png';
 import BACKEND_URL from "../../service/backend";
 import CrearPeriodoModal from "./components/CrearPeriodoModal";
 import BotonNuevoPeriodo from "./components/BotonNuevoPeriodo";
 import PeriodoDetalle from "../../features/periodos/PeriodoDetalle";
+import calendarioImg from '../../assets/calendario.png';
 import ContextMenu from "../../components/ContextMenu/ContextMenu";
 import DetallesPeriodoModal from "../../components/DetallesPeriodoModal/DetallesPeriodoModal";
 import ConfirmarEliminarModal from "../../components/ConfirmarEliminarModal/ConfirmarEliminarModal";
@@ -124,14 +125,44 @@ const PeriodosSlidebar = () => {
     <div style={{ display: 'flex', flexDirection: 'row' }}>
       <Slidebar
         items={periodos}
-        icon={FaCalendarAlt}
+        icon={() => <img src={calendarioSidebarImg} alt="Calendario" style={{ width: 44, height: 44 }} />}
         onItemClick={handlePeriodoClick}
         onContextMenu={handleContextMenu}
         extraTop={<BotonNuevoPeriodo onClick={() => setModalOpen(true)} />}
       />
       
       <div style={{ flexGrow: 1, overflowY: 'auto' }}>
-        <PeriodoDetalle periodo={selectedPeriodo} />
+        {selectedPeriodo ? (
+          <PeriodoDetalle periodo={selectedPeriodo} />
+        ) : (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '60vh',
+            color: '#4a5a6a',
+            background: 'linear-gradient(135deg, #f8fafc 60%, #e3eaf5 100%)',
+            borderRadius: '18px',
+            boxShadow: '0 4px 24px 0 rgba(80,100,120,0.07)',
+            margin: '32px',
+            fontSize: '1.2rem',
+            transition: 'box-shadow 0.3s',
+          }}>
+            <img src={calendarioImg} alt="Calendario" style={{ width: 72, height: 72, marginBottom: 24, opacity: 0.9, filter: 'drop-shadow(0 2px 8px #b0b8c1)' }} />
+            <div style={{ fontWeight: 700, fontSize: '1.5rem', marginBottom: 8 }}>
+              ¡Selecciona un período!
+            </div>
+            <div style={{ color: '#6c7a89', fontSize: '1.1rem', marginBottom: 12, textAlign: 'center' }}>
+              Selecciona un período de la izquierda<br />
+              o crea uno nuevo para comenzar a trabajar.
+            </div>
+            <div style={{ fontSize: '0.95rem', color: '#b0b8c1', textAlign: 'center' }}>
+              Los detalles del período aparecerán aquí.<br />
+              ¡Organiza, visualiza y gestiona tus periodos fácilmente!
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Menú contextual */}

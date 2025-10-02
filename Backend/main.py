@@ -6,6 +6,7 @@ from features.Proyecto.BloqueProyecto.bloqueProyectoRouter import router as bloq
 from features.Proyecto.Carpetas.CarpetasPoryectoRouter import router as carpetas_proyecto_router
 from features.Carpetas.carpetasRouter import router as carpetas_router
 from features.Documentos.documentoRouter import router as documentos_router
+from features.metadatos.MetadatosDocRouter import router as metadatos_router
 
 
 app = FastAPI()
@@ -28,6 +29,7 @@ app.include_router(modulo_router)
 app.include_router(carpetas_proyecto_router)
 app.include_router(carpetas_router)
 app.include_router(documentos_router)
+app.include_router(metadatos_router)
 
 
 @app.get("/")

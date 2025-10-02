@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import ArchivoDetallePlus from '../../features/proyectos/plus/ArchivoDetallePlus';
 import { useNotification } from '../../contexts/NotificationContext';
 import BACKEND_URL from '../../service/backend';
 import './VisualizadorArchivos.css';
 
-const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
+const VisualizadorArchivos = ({ documento, isOpen, onClose, esDeProyecto = false, etiquetas = [], comentarios = [], versiones = [], permisos = {}, onEtiquetasChange, onNuevoComentario, onRestaurarVersion, onPermisosChange }) => {
   const [loading, setLoading] = useState(true);
   const [metadata, setMetadata] = useState({});
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -579,6 +580,21 @@ const VisualizadorArchivos = ({ documento, isOpen, onClose }) => {
                 ✕ Cerrar
               </button>
             </div>
+
+              {/* Opciones avanzadas (PLUS) solo para proyectos */}
+              {esDeProyecto && (
+                <ArchivoDetallePlus
+                  archivoId={metadata.id}
+                  etiquetas={etiquetas}
+                  comentarios={comentarios}
+                  versiones={versiones}
+                  permisos={permisos}
+                  onEtiquetasChange={onEtiquetasChange}
+                  onNuevoComentario={onNuevoComentario}
+                  onRestaurarVersion={onRestaurarVersion}
+                  onPermisosChange={onPermisosChange}
+                />
+              )}
           </div>
         </div>
       </div>
