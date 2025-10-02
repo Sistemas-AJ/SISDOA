@@ -1,102 +1,280 @@
+/* Usamos variables CSS para una fácil personalización de la paleta de colores */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-text-title: #111827;
+  --color-text-body: #374151;
+  --color-text-light: #6b7280;
+  --color-border: #d1d5db;
+  --color-border-focus: #2563eb;
+  --color-bg-light: #f9fafb;
+  --color-bg-modal: #ffffff;
+  --color-bg-disabled: #e5e7eb;
+  --color-error: #ef4444;
+}
+
+/* --- ESTRUCTURA DEL MODAL --- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(17, 24, 39, 0.6); /* Un overlay más oscuro y profesional */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  backdrop-filter: blur(4px); /* Efecto de desenfoque sutil en el fondo */
 }
 
+/* CORRECCIÓN APLICADA AQUÍ */
 .modal {
-  background: #222c36;
-  color: #fff;
-  border-radius: 12px;
-  padding: 32px 36px 24px 36px;
-  min-width: 540px;
-  max-width: 98vw;
-  width: 540px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  background: var(--color-bg-modal);
+  color: var(--color-text-body);
+  border-radius: 40px;
+  padding: 28px 32px;
+  width: 400px;
+  max-width: 95vw;
+  margin-bottom: 0px;
+  box-shadow: 0 8px 40px 0 rgba(30,41,59,0.18), 0 2px 8px 0 rgba(0,0,0,0.08);
+  border: 1.5px solid #e0e7ef;
+  animation: modalPop 0.32s cubic-bezier(.4,1.4,.6,1) both;
 }
 
+@keyframes modalPop {
+  0% { transform: scale(0.97) translateY(30px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* --- ENCABEZADO Y TÍTULO --- */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  color: var(--color-text-title);
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--color-text-light);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.close-button:hover {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-title);
+}
+
+.close-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- FORMULARIO Y CAMPOS --- */
 .modal-form {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px 24px;
+  gap: 20px;
 }
 
-.modal-form label {
+/* Contenedor de cada campo (label + input) */
+.form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0;
-  font-size: 1rem;
 }
 
-/* Estilos unificados para input, select y el nuevo textarea */
+/* Utilidad para que un campo ocupe todo el ancho */
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Mejor separación visual de los labels */
+.modal-form label {
+  margin-bottom: 9px;
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: var(--color-text-body);
+}
+
+/* Contenedor para input con icono */
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--color-text-light);
+  pointer-events: none; /* Para que no interfiera con el click en el input */
+}
+
+/* Inputs y selects con transición de fondo y efecto hover */
 .modal-form input, 
 .modal-form select,
 .modal-form textarea {
   width: 100%;
-  padding: 7px 10px;
-  margin-top: 4px;
-  border-radius: 6px;
-  border: none;
-  background: #263445;
-  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-modal);
+  color: var(--color-text-title);
   font-size: 1rem;
-  font-family: inherit; /* Asegura que la fuente sea la misma */
-  margin-bottom: 0;
+  font-family: inherit;
   box-sizing: border-box;
-  resize: vertical; /* Permite redimensionar verticalmente el textarea */
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 
-.modal-form input[type="date"] {
-  color-scheme: dark;
+.modal-form input:hover, .modal-form select:hover, .modal-form textarea:hover {
+  background: #f3f6fa;
+  border-color: #b6c3d1;
 }
 
-@media (max-width: 700px) {
-  .modal {
-    min-width: 95vw;
-    width: 95vw;
-    padding: 18px 6vw 18px 6vw;
-  }
-  .modal-form {
-    grid-template-columns: 1fr;
-    gap: 14px 0;
-  }
+/* Estilo para inputs con icono */
+.input-with-icon input {
+  padding-left: 40px; 
 }
 
+/* Efecto focus más notorio */
+.modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+  background: #fff;
+}
+
+/* Mejor contraste en el placeholder */
+.modal-form ::placeholder {
+  color: #b6bfc9;
+  opacity: 1;
+}
+
+.modal-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Estilo personalizado para el select */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  content: '▼';
+  font-size: 0.7rem;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-light);
+  pointer-events: none;
+}
+
+.modal-form select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 36px; /* Espacio para la flecha personalizada */
+}
+
+/* --- ACCIONES Y BOTONES --- */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 28px;
   grid-column: 1 / -1;
 }
 
+/* Botón primario con leve sombra y efecto press */
 .modal-actions button {
-  padding: 7px 18px;
-  border-radius: 6px;
-  border: none;
-  font-size: 1rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.97rem;
+  font-weight: 600;
   cursor: pointer;
-  background: #007bff;
-  color: #fff;
-  transition: background 0.2s;
+  transition: all 0.18s;
+  box-shadow: 0 2px 8px 0 #2563eb22;
 }
 
-.modal-actions button[type="button"] {
-  background: #444b5a;
+/* Botón primario con efecto hover y press */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+  /* La sombra ya está en la regla general de .modal-actions button, no es necesario repetirla */
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px 0 #2563eb33;
+}
+.btn-primary:active:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px 0 #2563eb22;
+}
+
+.btn-secondary {
+  background-color: var(--color-bg-modal);
+  color: var(--color-text-body);
+  border: 1px solid var(--color-border);
+  box-shadow: none; /* El botón secundario no necesita sombra */
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-bg-light);
+  border-color: #9ca3af;
 }
 
 .modal-actions button:disabled {
-  opacity: 0.7;
+  background-color: var(--color-bg-disabled);
+  color: var(--color-text-light);
   cursor: not-allowed;
+  border-color: transparent;
+  box-shadow: none;
 }
 
+/* --- MENSAJE DE ERROR --- */
 .modal-error {
-  color: #ff6b6b;
-  margin-bottom: 10px;
-  font-size: 0.98rem;
+  color: var(--color-error);
+  font-size: 0.875rem;
   grid-column: 1 / -1;
+  font-weight: 500;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 640px) {
+  .modal {
+    width: 90vw;
+    padding: 24px;
+  }
+  .modal-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .modal-actions {
+    flex-direction: column-reverse; /* Botón primario arriba en móvil */
+    gap: 10px;
+  }
+  .modal-actions button {
+    width: 100%;
+  }
 }
