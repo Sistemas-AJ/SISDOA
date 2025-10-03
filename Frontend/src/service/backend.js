@@ -1,2 +1,2 @@
-const BACKEND_URL = "http://localhost:8000";
+const BACKEND_URL = "http://localhost:9050";
 export default BACKEND_URL;

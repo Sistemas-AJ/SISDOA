@@ -1,6 +1,8 @@
 {
   "name": "sisdoa",
   "version": "0.1.0",
+  "description": "Sistema de Documentos y Archivos - Gestión documental integral",
+  "author": "Adrian Alejandro Ruiz Carreño y Alister Vasquez",
   "private": true,
   "main": "public/electron.js",
   "dependencies": {
@@ -12,8 +14,6 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "concurrently": "^9.2.1",
-    "electron": "^38.2.0",
-    "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1",
     "gsap": "^3.13.0",
     "react": "^19.1.1",
@@ -31,7 +31,13 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\""
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "prepackage": "npm run build",
+    "package": "electron-builder build --publish=never",
+    "package-win": "electron-builder build --win --publish=never",
+    "package-mac": "electron-builder build --mac --publish=never",
+    "package-linux": "electron-builder build --linux --publish=never",
+    "dist": "npm run build && electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -52,6 +58,46 @@
     ]
   },
   "devDependencies": {
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.sisdoa.app",
+    "productName": "SISDOA - Sistema de Documentos",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "public/electron.js",
+      "node_modules/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "../Backend",
+        "to": "backend",
+        "filter": ["**/*", "!**/__pycache__/**", "!**/.git/**", "!**/node_modules/**", "!**/.venv/**"]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "public/favicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SISDOA"
+    }
   }
 }

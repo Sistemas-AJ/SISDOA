@@ -1,0 +1,21 @@
+{
+  "name": "sisdoa-backend",
+  "version": "1.0.0",
+  "description": "Backend empaquetado para SISDOA",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py"
+  },
+  "dependencies": {},
+  "python": {
+    "requirements": [
+      "fastapi==0.110.2",
+      "uvicorn[standard]==0.29.0", 
+      "pydantic==2.7.1",
+      "python-multipart==0.0.9",
+      "sqlalchemy==2.0.20"
+    ],
+    "mainFile": "main.py",
+    "port": 9050
+  }
+}
