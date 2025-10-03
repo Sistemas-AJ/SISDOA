@@ -1,7 +1,7 @@
 
 import './App.css';
 import React from 'react';
-import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, useLocation } from 'react-router-dom';
 import Appbar from './components/appbar/appbar';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Periodos from './pages/Periodo/periodos';
@@ -29,6 +29,12 @@ function AppRoutes() {
 }
 
 function App() {
+  // Detectar si estamos en una aplicación empaquetada (Electron)
+  const isElectron = window.electron || navigator.userAgent.toLowerCase().includes('electron');
+  
+  // Usar HashRouter para aplicaciones empaquetadas, BrowserRouter para desarrollo web
+  const Router = isElectron ? HashRouter : BrowserRouter;
+  
   return (
     <NotificationProvider>
       <Router>
