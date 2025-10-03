@@ -1,6 +1,6 @@
 import React from 'react';
 
-const VistaIconosGrandes = ({ carpetas, onEntrarCarpeta, onContextMenu }) => {
+const VistaIconosGrandes = ({ carpetas, onEntrarCarpeta, onContextMenu, textoBusqueda }) => {
   if (carpetas.length === 0) {
     return (
       <div style={{
@@ -39,6 +39,18 @@ const VistaIconosGrandes = ({ carpetas, onEntrarCarpeta, onContextMenu }) => {
     transform: 'translateY(-4px)'
   };
 
+  // Función para resaltar coincidencias
+  const resaltarCoincidencia = (nombre) => {
+    if (!textoBusqueda || textoBusqueda.trim() === "") return nombre;
+    const texto = textoBusqueda.trim();
+    const partes = nombre.split(new RegExp(`(${texto})`, 'gi'));
+    return partes.map((parte, i) =>
+      parte.toLowerCase() === texto.toLowerCase() ?
+        <span key={i} style={{ background: '#ffe066', color: '#222', borderRadius: '4px', padding: '0 2px' }}>{parte}</span>
+        : parte
+    );
+  };
+
   const renderCarpeta = (carpeta) => {
     return (
       <div
@@ -72,7 +84,7 @@ const VistaIconosGrandes = ({ carpetas, onEntrarCarpeta, onContextMenu }) => {
           wordBreak: 'break-word',
           lineHeight: '1.3'
         }}>
-          {carpeta.nombre}
+          {resaltarCoincidencia(carpeta.nombre)}
         </div>
         
         <div style={{ 
